@@ -14,8 +14,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Backend is running' });
 });
 
-// Routes will be added here
-// app.use('/api/products', require('./routes/products'));
+// Routes
+app.use('/api/products', require('./routes/products'));
 // app.use('/api/cart', require('./routes/cart'));
 // app.use('/api/orders', require('./routes/orders'));
 // app.use('/api/auth', require('./routes/auth'));

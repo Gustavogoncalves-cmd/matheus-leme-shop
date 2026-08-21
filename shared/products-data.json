@@ -1,0 +1,230 @@
+[
+  {
+    "id": 1,
+    "title": "Pacote Nitro",
+    "headerTitle": "NITRO BUNDLE",
+    "category": "pacote",
+    "type": "combo",
+    "price": 199.90,
+    "discount": 25,
+    "sold": 150,
+    "featured": true,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    "shortDescription": "Pacote completo com alertas animados, badges de chat customizadas e overlays de webcam",
+    "description": "O Pacote Nitro é a solução completa para streamers que querem elevar suas transmissões. Inclui alertas animados, badges de chat customizadas e overlays profissionais de webcam.",
+    "features": [
+      "Alertas de Follow animados",
+      "Alertas de Subscribe com som",
+      "Badges de chat customizadas",
+      "Overlay de webcam premium",
+      "Stinger de transição 4K",
+      "Suporte técnico 7 dias"
+    ],
+    "images": [
+      "/assets/images/pacote-nitro-1.png",
+      "/assets/images/pacote-nitro-2.png"
+    ],
+    "thumbnail": "/assets/images/pacote-nitro-thumb.png",
+    "previews": [
+      {
+        "tabName": "Preview",
+        "type": "banner",
+        "img": "/assets/images/pacote-nitro-preview.png"
+      },
+      {
+        "tabName": "Alertas",
+        "type": "alerts",
+        "img": "/assets/images/pacote-nitro-alerts.png"
+      },
+      {
+        "tabName": "Overlays",
+        "type": "scenes",
+        "img": "/assets/images/pacote-nitro-overlays.png"
+      }
+    ],
+    "priceOriginal": 266.53
+  },
+  {
+    "id": 2,
+    "title": "Transição Complexa 4K",
+    "headerTitle": "STINGER 4K",
+    "category": "avulso",
+    "type": "individual",
+    "price": 79.90,
+    "discount": 15,
+    "sold": 320,
+    "featured": false,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+    "shortDescription": "Transição stinger profissional em 4K com efeitos cyberpunk",
+    "description": "Transição stinger em resolução 4K com efeitos cyberpunk modernos. Compatível com OBS Studio, Streamlabs e XSplit.",
+    "features": [
+      "Resolução 4K (3840x2160)",
+      "60 FPS",
+      "Efeito cyberpunk",
+      "Arquivo .mov + .webm",
+      "Sem marca d'água",
+      "Suporte por email"
+    ],
+    "images": [
+      "/assets/images/stinger-4k-1.png"
+    ],
+    "thumbnail": "/assets/images/stinger-4k-thumb.png",
+    "previews": [
+      {
+        "tabName": "Preview",
+        "type": "banner",
+        "img": "/assets/images/stinger-4k-preview.png"
+      }
+    ],
+    "priceOriginal": 94.00
+  },
+  {
+    "id": 3,
+    "title": "Emotes Animados (Pack com 20)",
+    "headerTitle": "EMOTES PACK",
+    "category": "avulso",
+    "type": "individual",
+    "price": 149.90,
+    "discount": 30,
+    "sold": 89,
+    "featured": false,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    "shortDescription": "Pack com 20 emotes animados premium para Twitch",
+    "description": "Conjunto de 20 emotes animados feitos especialmente para Twitch. Todos em 4 tamanhos (28x28, 56x56, 112x112, 320x320) e formatos PNG/GIF.",
+    "features": [
+      "20 emotes únicos",
+      "4 tamanhos cada",
+      "Animação suave (120 frames)",
+      "Formato PNG + GIF",
+      "Sem copyright",
+      "Personalização disponível"
+    ],
+    "images": [
+      "/assets/images/emotes-pack-1.png",
+      "/assets/images/emotes-pack-2.png"
+    ],
+    "thumbnail": "/assets/images/emotes-pack-thumb.png",
+    "previews": [
+      {
+        "tabName": "Galeria",
+        "type": "banner",
+        "img": "/assets/images/emotes-pack-gallery.png"
+      }
+    ],
+    "priceOriginal": 214.14
+  },
+  {
+    "id": 4,
+    "title": "Avatar Gamer Ultra",
+    "headerTitle": "AVATAR CUSTOM",
+    "category": "avulso",
+    "type": "individual",
+    "price": 89.90,
+    "discount": 20,
+    "sold": 156,
+    "featured": false,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+    "shortDescription": "Avatar profissional customizado em estilo gamer",
+    "description": "Avatar digital em estilo gamer com alta resolução (4K). Inclui variações de expressão.",
+    "features": [
+      "Avatar em alta resolução",
+      "5 expressões diferentes",
+      "Fundo transparente",
+      "Formato PNG",
+      "Edição básica incluída",
+      "2 revisões"
+    ],
+    "images": [
+      "/assets/images/avatar-1.png"
+    ],
+    "thumbnail": "/assets/images/avatar-thumb.png",
+    "previews": [
+      {
+        "tabName": "Avatar",
+        "type": "avatar",
+        "img": "/assets/images/avatar-preview.png"
+      }
+    ],
+    "priceOriginal": 112.38
+  },
+  {
+    "id": 5,
+    "title": "Mídia Kit Comercial",
+    "headerTitle": "MEDIA KIT PRO",
+    "category": "pacote",
+    "type": "combo",
+    "price": 249.90,
+    "discount": 10,
+    "sold": 42,
+    "featured": true,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+    "shortDescription": "Mídia Kit profissional com 5 designs diferentes",
+    "description": "Mídia Kit comercial completo com 5 designs modernos. Ideal para fechar patrocínios com marcas. Inclui customizações com dados do streamer.",
+    "features": [
+      "5 layouts diferentes",
+      "Customização com dados do canal",
+      "Gráficos estatísticos",
+      "Template Figma editável",
+      "3 revisões incluídas",
+      "Suporte priority"
+    ],
+    "images": [
+      "/assets/images/media-kit-1.png",
+      "/assets/images/media-kit-2.png"
+    ],
+    "thumbnail": "/assets/images/media-kit-thumb.png",
+    "previews": [
+      {
+        "tabName": "Design 1",
+        "type": "banner",
+        "img": "/assets/images/media-kit-design1.png"
+      },
+      {
+        "tabName": "Design 2",
+        "type": "banner",
+        "img": "/assets/images/media-kit-design2.png"
+      }
+    ],
+    "priceOriginal": 277.67
+  },
+  {
+    "id": 6,
+    "title": "Overlays de Webcam (Pack com 10)",
+    "headerTitle": "WEBCAM OVERLAYS",
+    "category": "avulso",
+    "type": "individual",
+    "price": 59.90,
+    "discount": 35,
+    "sold": 203,
+    "featured": false,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    "shortDescription": "10 overlays diferentes para webcam com temas gamers",
+    "description": "Pack com 10 overlays para webcam em diferentes estilos gamer. Prontos para usar no OBS Studio.",
+    "features": [
+      "10 overlays únicos",
+      "Fundo transparente",
+      "1920x1080 + 1280x720",
+      "Arquivo .PNG",
+      "Compatível com OBS",
+      "Temas variados"
+    ],
+    "images": [
+      "/assets/images/webcam-overlays-1.png"
+    ],
+    "thumbnail": "/assets/images/webcam-overlays-thumb.png",
+    "previews": [
+      {
+        "tabName": "Overlays",
+        "type": "panels",
+        "img": "/assets/images/webcam-overlays-preview.png"
+      }
+    ],
+    "priceOriginal": 92.15
+  }
+]
