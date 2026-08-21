@@ -1,0 +1,42 @@
+# Ignore large/unnecessary files in Docker builds
+
+# Dependencies (will be reinstalled in container)
+node_modules
+
+# Version control
+.git
+.gitignore
+
+# Build/dist
+dist
+build
+
+# Development
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage
+.jest_cache
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.code-workspace
+
+# Migrations/seeds (if cached)
+.db
+*.db

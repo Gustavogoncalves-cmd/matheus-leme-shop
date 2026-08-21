@@ -1,0 +1,92 @@
+version: '3.8'
+
+# Matheus Leme Shop - Full Stack Application
+# Services: Frontend (Vue + Vite), Backend (Express), Database (PostgreSQL)
+
+services:
+  # PostgreSQL Database Service
+  # Handles all data persistence for the application
+  postgres:
+    image: postgres:16-alpine
+    container_name: matheus-shop-db
+    environment:
+      # Database credentials - change in production!
+      POSTGRES_USER: ${DB_USER:-shopuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-shoppassword}
+      POSTGRES_DB: ${DB_NAME:-matheus_shop}
+    ports:
+      # Port 5432: Standard PostgreSQL port
+      - "5432:5432"
+    volumes:
+      # Named volume for persistent database data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-shopuser}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - matheus-network
+
+  # Backend API Service
+  # Express.js server providing REST API endpoints
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: matheus-shop-api
+    environment:
+      # Node environment
+      NODE_ENV: ${NODE_ENV:-production}
+      # Database connection
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-shopuser}
+      DB_PASSWORD: ${DB_PASSWORD:-shoppassword}
+      DB_NAME: ${DB_NAME:-matheus_shop}
+      # API configuration
+      API_PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+    ports:
+      # Port 3000: Backend API
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Mount source for development (optional)
+      - ./backend/src:/app/src
+    networks:
+      - matheus-network
+    restart: unless-stopped
+
+  # Frontend Service
+  # Vue 3 + Vite SPA served via nginx
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: matheus-shop-web
+    environment:
+      # Frontend environment variables
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000/api}
+      VITE_STRIPE_PUBLIC_KEY: ${VITE_STRIPE_PUBLIC_KEY:-}
+    ports:
+      # Port 5173: Frontend development/production
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - matheus-network
+    restart: unless-stopped
+
+# Volumes for data persistence
+volumes:
+  postgres_data:
+    driver: local
+
+# Custom network for inter-service communication
+networks:
+  matheus-network:
+    driver: bridge

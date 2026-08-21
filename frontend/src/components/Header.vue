@@ -23,7 +23,7 @@
       <!-- Controls -->
       <div class="flex items-center gap-4">
         <!-- Theme Toggle -->
-        <button @click="darkMode = !darkMode"
+        <button @click="handleToggleDarkMode"
                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 border shadow-sm"
                 :class="darkMode ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'">
           <span v-if="!darkMode" class="flex items-center gap-1">
@@ -67,27 +67,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useCartStore } from '../stores/cart';
-import { useAuthStore } from '../stores/auth';
-import { Moon, Sun, ShoppingBag } from 'lucide-vue-next';
+import { computed, watch } from 'vue'
+import { useCartStore } from '../stores/cart'
+import { Moon, Sun, ShoppingBag } from 'lucide-vue-next'
 
-const darkMode = ref(localStorage.getItem('darkMode') === 'true');
-const cartStore = useCartStore();
-const authStore = useAuthStore();
+const props = defineProps({
+  isDark: Boolean
+})
 
-const cartCount = computed(() => cartStore.count);
-const isAuthenticated = computed(() => authStore.isAuthenticated);
-const user = computed(() => authStore.user);
+const emit = defineEmits(['toggleDarkMode'])
+
+const cartStore = useCartStore()
+
+const cartCount = computed(() => cartStore.items?.length || 0)
+const isAuthenticated = computed(() => false) // TODO: Implement auth
+const user = computed(() => null) // TODO: Implement auth
+
+const handleToggleDarkMode = () => {
+  emit('toggleDarkMode')
+}
 
 const logout = () => {
-  authStore.logout();
-};
+  // TODO: Implement logout
+}
 
-// Watch dark mode changes
-import { watch } from 'vue';
-watch(darkMode, (newVal) => {
-  localStorage.setItem('darkMode', newVal.toString());
-  document.documentElement.classList.toggle('dark', newVal);
-});
+const darkMode = computed(() => props.isDark)
 </script>
