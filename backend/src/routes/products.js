@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const { authenticate, authorize } = require('../middleware/auth');
+const {
+  validateCreateProduct,
+  validateUpdateProduct,
+  validateProductId,
+  validatePagination,
+} = require('../middleware/validation');
 
 /**
  * @swagger
@@ -69,7 +75,7 @@ const { authenticate, authorize } = require('../middleware/auth');
  *       500:
  *         description: Server error
  */
-router.get('/', async (req, res) => {
+router.get('/', validatePagination, async (req, res) => {
   try {
     const {
       category,
@@ -81,8 +87,8 @@ router.get('/', async (req, res) => {
     } = req.query;
 
     const filters = {
-      limit: parseInt(limit),
-      offset: parseInt(offset),
+      limit: Math.min(parseInt(limit) || 12, 100), // Cap at 100
+      offset: Math.max(parseInt(offset) || 0, 0), // Don't allow negative
     };
 
     if (category) filters.category = category;
@@ -104,7 +110,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch products',
-      message: error.message,
     });
   }
 });
@@ -142,7 +147,7 @@ router.get('/', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateProductId, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
 
@@ -162,7 +167,6 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch product',
-      message: error.message,
     });
   }
 });
@@ -253,7 +257,7 @@ router.get('/:id', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post('/', authenticate, authorize('admin'), async (req, res) => {
+router.post('/', authenticate, authorize('admin'), validateCreateProduct, async (req, res) => {
   try {
     const {
       title,
@@ -273,14 +277,6 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
       features,
       previews,
     } = req.body;
-
-    // Validation
-    if (!title || !category || !type || !description || !price) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required fields',
-      });
-    }
 
     const product = await Product.create({
       title,
@@ -311,7 +307,6 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to create product',
-      message: error.message,
     });
   }
 });
@@ -378,7 +373,7 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.patch('/:id', authenticate, authorize('admin'), async (req, res) => {
+router.patch('/:id', authenticate, authorize('admin'), validateProductId, validateUpdateProduct, async (req, res) => {
   try {
     const product = await Product.update(req.params.id, req.body);
 
@@ -399,7 +394,6 @@ router.patch('/:id', authenticate, authorize('admin'), async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to update product',
-      message: error.message,
     });
   }
 });
@@ -443,7 +437,7 @@ router.patch('/:id', authenticate, authorize('admin'), async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
+router.delete('/:id', authenticate, authorize('admin'), validateProductId, async (req, res) => {
   try {
     const deleted = await Product.delete(req.params.id);
 
@@ -463,7 +457,6 @@ router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to delete product',
-      message: error.message,
     });
   }
 });

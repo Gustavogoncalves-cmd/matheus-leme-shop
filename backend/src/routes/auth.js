@@ -296,10 +296,10 @@ router.get('/profile', authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error('Get profile error:', error);
+    // Don't expose internal error details
     res.status(500).json({
       success: false,
       error: 'Failed to fetch profile',
-      message: error.message,
     });
   }
 });

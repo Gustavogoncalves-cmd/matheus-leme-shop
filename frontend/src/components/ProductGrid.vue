@@ -37,7 +37,7 @@
 import { computed } from 'vue';
 import { useProductsStore } from '../stores/products';
 import ProductCard from './ProductCard.vue';
-import { Layout3, Package, Layers } from 'lucide-vue-next';
+import { Grid3X3, Package, Layers } from 'lucide-vue-next';
 
 const props = defineProps({
   darkMode: {
@@ -63,7 +63,7 @@ const getCategoryLabel = (cat) => {
 
 const getCategoryIcon = (cat) => {
   const icons = {
-    todos: Layout3,
+    todos: Grid3X3,
     pacote: Package,
     avulso: Layers,
   };
