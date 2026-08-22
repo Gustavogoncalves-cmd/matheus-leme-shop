@@ -1,47 +1,36 @@
 module.exports = {
   apps: [
+    // Backend - Express.js
     {
       name: 'matheus-backend-3000',
       cwd: './backend',
-      script: 'npm',
-      args: 'run dev',
-      watch: ['src'],
-      ignore_watch: ['node_modules', 'dist'],
+      script: 'src/index.js',
+      interpreter: 'node',
       env: {
         NODE_ENV: 'development',
-        PORT: 3000,
+        PORT: 3000
       },
-      error_file: './logs/err.log',
+      error_file: './logs/error.log',
       out_file: './logs/out.log',
-      log_file: './logs/combined.log',
-      time: true,
+      watch: ['src'],
+      ignore_watch: ['node_modules', 'logs'],
+      max_memory_restart: '500M'
     },
+    // Frontend - Vite
     {
       name: 'matheus-frontend-5173',
       cwd: './frontend',
-      script: 'npm',
-      args: 'run dev',
-      watch: ['src', 'public'],
-      ignore_watch: ['node_modules', 'dist', '.next'],
+      script: 'node_modules/vite/bin/vite.js',
+      args: '--host 0.0.0.0 --port 5173',
+      interpreter: 'node',
       env: {
-        NODE_ENV: 'development',
-        VITE_API_URL: 'http://localhost:3000/api',
+        NODE_ENV: 'development'
       },
-      error_file: './logs/err.log',
+      error_file: './logs/error.log',
       out_file: './logs/out.log',
-      log_file: './logs/combined.log',
-      time: true,
-    },
-  ],
-
-  deploy: {
-    production: {
-      user: 'node',
-      host: 'your-production-server.com',
-      ref: 'origin/main',
-      repo: 'git@github.com:your-repo/matheus-leme-shop.git',
-      path: '/var/www/matheus-leme-shop',
-      'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.cjs --env production',
-    },
-  },
+      watch: ['src', 'index.html'],
+      ignore_watch: ['node_modules', 'logs', 'dist'],
+      max_memory_restart: '300M'
+    }
+  ]
 };

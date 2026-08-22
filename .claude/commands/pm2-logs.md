@@ -1,6 +1,6 @@
-# PM2 View All Logs
+description: View all PM2 service logs
 
-View logs from all services.
+# View all logs
 
 ```bash
 cd /home/iamgustavo/obsidian-second-brain/projects/matheus-leme-shop && npx pm2 logs
