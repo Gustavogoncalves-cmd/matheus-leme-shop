@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <div v-if="cartStore.items.length === 0" class="text-center py-12">
+    <div v-if="cartStore.items.length === 0" data-testid="empty-cart" class="text-center py-12">
       <ShoppingBag class="w-12 h-12 mx-auto mb-4 opacity-50" :class="darkMode ? 'text-slate-500' : 'text-slate-300'" />
       <p :class="darkMode ? 'text-slate-400' : 'text-slate-500'" class="mb-4">
         Seu carrinho está vazio
@@ -14,6 +14,7 @@
       <!-- Cart Items -->
       <div class="space-y-4">
         <div v-for="item in cartStore.items" :key="item.id"
+             data-testid="cart-item"
              class="flex gap-4 p-4 rounded-lg border"
              :class="darkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'">
 
@@ -45,6 +46,7 @@
               <Minus class="w-4 h-4" />
             </button>
             <input type="number" v-model.number="item.quantity" min="1" max="99"
+                   data-testid="item-quantity"
                    @change="cartStore.updateQuantity(item.id, item.quantity)"
                    class="w-12 text-center rounded border py-1 px-2 text-sm"
                    :class="darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-300'" />
@@ -61,6 +63,7 @@
               R$ {{ (itemTotal(item)).toFixed(2) }}
             </p>
             <button @click="cartStore.removeItem(item.id)"
+                    data-testid="remove-item"
                     class="text-xs text-red-500 hover:text-red-700 font-semibold mt-2">
               Remover
             </button>

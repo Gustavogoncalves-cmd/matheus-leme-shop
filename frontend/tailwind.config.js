@@ -38,5 +38,14 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [require("daisyui")],
+  daisyui: {
+    themes: ["light", "dark", "cupcake", "bumblebee", "emerald", "corporate", "synthwave"],
+    darkMode: "class",
+    base: true,
+    styled: true,
+    utils: true,
+    logs: false,
+    themeRoot: ":root",
+  },
 }

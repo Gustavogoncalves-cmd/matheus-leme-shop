@@ -1,230 +1,354 @@
 [
   {
-    "id": 1,
-    "title": "Pacote Nitro",
-    "headerTitle": "NITRO BUNDLE",
-    "category": "pacote",
-    "type": "combo",
-    "price": 199.90,
-    "discount": 25,
-    "sold": 150,
+    "title": "Wireless Headphones Pro",
+    "headerTitle": "PREMIUM AUDIO",
+    "category": "electronics",
+    "type": "individual",
+    "price": 299.90,
+    "discount": 15,
+    "sold": 245,
     "featured": true,
     "available": true,
     "themeColor": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    "shortDescription": "Pacote completo com alertas animados, badges de chat customizadas e overlays de webcam",
-    "description": "O Pacote Nitro é a solução completa para streamers que querem elevar suas transmissões. Inclui alertas animados, badges de chat customizadas e overlays profissionais de webcam.",
+    "shortDescription": "High-quality wireless headphones with noise cancellation and 30-hour battery",
+    "description": "Experience premium sound quality with our Wireless Headphones Pro. Features active noise cancellation, 30-hour battery life, and premium comfort for all-day wear.",
     "features": [
-      "Alertas de Follow animados",
-      "Alertas de Subscribe com som",
-      "Badges de chat customizadas",
-      "Overlay de webcam premium",
-      "Stinger de transição 4K",
-      "Suporte técnico 7 dias"
+      "Active noise cancellation (ANC)",
+      "30-hour battery life",
+      "Bluetooth 5.2 connectivity",
+      "Comfortable over-ear design",
+      "Built-in microphone for calls",
+      "Foldable design with carrying case"
     ],
     "images": [
-      "/assets/images/pacote-nitro-1.png",
-      "/assets/images/pacote-nitro-2.png"
+      "/assets/images/headphones-1.jpg",
+      "/assets/images/headphones-2.jpg"
     ],
-    "thumbnail": "/assets/images/pacote-nitro-thumb.png",
+    "thumbnail": "/assets/images/headphones-thumb.jpg",
     "previews": [
       {
-        "tabName": "Preview",
+        "tabName": "Product",
         "type": "banner",
-        "img": "/assets/images/pacote-nitro-preview.png"
+        "img": "/assets/images/headphones-preview.jpg"
       },
       {
-        "tabName": "Alertas",
-        "type": "alerts",
-        "img": "/assets/images/pacote-nitro-alerts.png"
-      },
-      {
-        "tabName": "Overlays",
-        "type": "scenes",
-        "img": "/assets/images/pacote-nitro-overlays.png"
+        "tabName": "Features",
+        "type": "details",
+        "img": "/assets/images/headphones-features.jpg"
       }
     ],
-    "priceOriginal": 266.53
+    "priceOriginal": 349.90
   },
   {
-    "id": 2,
-    "title": "Transição Complexa 4K",
-    "headerTitle": "STINGER 4K",
-    "category": "avulso",
+    "title": "4K Webcam Ultra",
+    "headerTitle": "STREAMING CAMERA",
+    "category": "electronics",
     "type": "individual",
-    "price": 79.90,
-    "discount": 15,
-    "sold": 320,
-    "featured": false,
+    "price": 189.90,
+    "discount": 20,
+    "sold": 156,
+    "featured": true,
     "available": true,
     "themeColor": "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-    "shortDescription": "Transição stinger profissional em 4K com efeitos cyberpunk",
-    "description": "Transição stinger em resolução 4K com efeitos cyberpunk modernos. Compatível com OBS Studio, Streamlabs e XSplit.",
+    "shortDescription": "Professional 4K webcam with auto-focus and built-in microphone",
+    "description": "Crystal-clear 4K video streaming with our Ultra Webcam. Perfect for professionals, streamers, and content creators who demand the best quality.",
     "features": [
-      "Resolução 4K (3840x2160)",
-      "60 FPS",
-      "Efeito cyberpunk",
-      "Arquivo .mov + .webm",
-      "Sem marca d'água",
-      "Suporte por email"
+      "4K resolution (3840x2160)",
+      "60 FPS video capture",
+      "Auto-focus technology",
+      "Built-in stereo microphone",
+      "Wide 90-degree field of view",
+      "USB 3.0 plug-and-play"
     ],
     "images": [
-      "/assets/images/stinger-4k-1.png"
+      "/assets/images/webcam-1.jpg"
     ],
-    "thumbnail": "/assets/images/stinger-4k-thumb.png",
+    "thumbnail": "/assets/images/webcam-thumb.jpg",
     "previews": [
       {
-        "tabName": "Preview",
+        "tabName": "Specs",
         "type": "banner",
-        "img": "/assets/images/stinger-4k-preview.png"
+        "img": "/assets/images/webcam-preview.jpg"
       }
     ],
-    "priceOriginal": 94.00
+    "priceOriginal": 239.90
   },
   {
-    "id": 3,
-    "title": "Emotes Animados (Pack com 20)",
-    "headerTitle": "EMOTES PACK",
-    "category": "avulso",
+    "title": "Mechanical Keyboard RGB",
+    "headerTitle": "GAMING KEYBOARD",
+    "category": "electronics",
     "type": "individual",
-    "price": 149.90,
-    "discount": 30,
-    "sold": 89,
+    "price": 249.90,
+    "discount": 25,
+    "sold": 189,
     "featured": false,
     "available": true,
     "themeColor": "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-    "shortDescription": "Pack com 20 emotes animados premium para Twitch",
-    "description": "Conjunto de 20 emotes animados feitos especialmente para Twitch. Todos em 4 tamanhos (28x28, 56x56, 112x112, 320x320) e formatos PNG/GIF.",
+    "shortDescription": "RGB mechanical keyboard with programmable keys and aluminum frame",
+    "description": "High-performance mechanical keyboard featuring customizable RGB lighting, programmable keys, and a durable aluminum frame for gamers and professionals.",
     "features": [
-      "20 emotes únicos",
-      "4 tamanhos cada",
-      "Animação suave (120 frames)",
-      "Formato PNG + GIF",
-      "Sem copyright",
-      "Personalização disponível"
+      "RGB backlit keys",
+      "Mechanical switches (Cherry MX compatible)",
+      "Programmable keys",
+      "Aluminum frame construction",
+      "USB-C connection",
+      "75% compact layout"
     ],
     "images": [
-      "/assets/images/emotes-pack-1.png",
-      "/assets/images/emotes-pack-2.png"
+      "/assets/images/keyboard-1.jpg",
+      "/assets/images/keyboard-2.jpg"
     ],
-    "thumbnail": "/assets/images/emotes-pack-thumb.png",
+    "thumbnail": "/assets/images/keyboard-thumb.jpg",
     "previews": [
       {
-        "tabName": "Galeria",
+        "tabName": "Design",
         "type": "banner",
-        "img": "/assets/images/emotes-pack-gallery.png"
+        "img": "/assets/images/keyboard-preview.jpg"
       }
     ],
-    "priceOriginal": 214.14
+    "priceOriginal": 329.90
   },
   {
-    "id": 4,
-    "title": "Avatar Gamer Ultra",
-    "headerTitle": "AVATAR CUSTOM",
-    "category": "avulso",
+    "title": "Premium Cotton T-Shirt",
+    "headerTitle": "CLASSIC TEE",
+    "category": "clothing",
     "type": "individual",
-    "price": 89.90,
-    "discount": 20,
-    "sold": 156,
-    "featured": false,
-    "available": true,
-    "themeColor": "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-    "shortDescription": "Avatar profissional customizado em estilo gamer",
-    "description": "Avatar digital em estilo gamer com alta resolução (4K). Inclui variações de expressão.",
-    "features": [
-      "Avatar em alta resolução",
-      "5 expressões diferentes",
-      "Fundo transparente",
-      "Formato PNG",
-      "Edição básica incluída",
-      "2 revisões"
-    ],
-    "images": [
-      "/assets/images/avatar-1.png"
-    ],
-    "thumbnail": "/assets/images/avatar-thumb.png",
-    "previews": [
-      {
-        "tabName": "Avatar",
-        "type": "avatar",
-        "img": "/assets/images/avatar-preview.png"
-      }
-    ],
-    "priceOriginal": 112.38
-  },
-  {
-    "id": 5,
-    "title": "Mídia Kit Comercial",
-    "headerTitle": "MEDIA KIT PRO",
-    "category": "pacote",
-    "type": "combo",
-    "price": 249.90,
+    "price": 49.90,
     "discount": 10,
-    "sold": 42,
+    "sold": 456,
     "featured": true,
     "available": true,
-    "themeColor": "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
-    "shortDescription": "Mídia Kit profissional com 5 designs diferentes",
-    "description": "Mídia Kit comercial completo com 5 designs modernos. Ideal para fechar patrocínios com marcas. Inclui customizações com dados do streamer.",
+    "themeColor": "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+    "shortDescription": "100% organic cotton t-shirt with comfortable fit, available in multiple colors",
+    "description": "Classic t-shirt made from premium 100% organic cotton. Breathable, comfortable, and perfect for everyday wear. Available in a range of vibrant colors.",
     "features": [
-      "5 layouts diferentes",
-      "Customização com dados do canal",
-      "Gráficos estatísticos",
-      "Template Figma editável",
-      "3 revisões incluídas",
-      "Suporte priority"
+      "100% organic cotton",
+      "Comfortable fit",
+      "Available in 8 colors",
+      "Available in XS to 3XL",
+      "Machine washable",
+      "Eco-friendly production"
     ],
     "images": [
-      "/assets/images/media-kit-1.png",
-      "/assets/images/media-kit-2.png"
+      "/assets/images/tshirt-1.jpg",
+      "/assets/images/tshirt-2.jpg"
     ],
-    "thumbnail": "/assets/images/media-kit-thumb.png",
+    "thumbnail": "/assets/images/tshirt-thumb.jpg",
     "previews": [
       {
-        "tabName": "Design 1",
-        "type": "banner",
-        "img": "/assets/images/media-kit-design1.png"
-      },
-      {
-        "tabName": "Design 2",
-        "type": "banner",
-        "img": "/assets/images/media-kit-design2.png"
+        "tabName": "Colors",
+        "type": "gallery",
+        "img": "/assets/images/tshirt-colors.jpg"
       }
     ],
-    "priceOriginal": 277.67
+    "priceOriginal": 55.90
   },
   {
-    "id": 6,
-    "title": "Overlays de Webcam (Pack com 10)",
-    "headerTitle": "WEBCAM OVERLAYS",
-    "category": "avulso",
+    "title": "Slim Fit Jeans Blue",
+    "headerTitle": "DENIM CLASSIC",
+    "category": "clothing",
     "type": "individual",
-    "price": 59.90,
-    "discount": 35,
-    "sold": 203,
+    "price": 129.90,
+    "discount": 15,
+    "sold": 234,
     "featured": false,
     "available": true,
-    "themeColor": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    "shortDescription": "10 overlays diferentes para webcam com temas gamers",
-    "description": "Pack com 10 overlays para webcam em diferentes estilos gamer. Prontos para usar no OBS Studio.",
+    "themeColor": "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+    "shortDescription": "Premium denim slim-fit jeans with stretch fabric for maximum comfort",
+    "description": "Premium slim-fit jeans crafted from high-quality denim with stretch fabric for comfort and style. Perfect for casual and semi-formal occasions.",
     "features": [
-      "10 overlays únicos",
-      "Fundo transparente",
-      "1920x1080 + 1280x720",
-      "Arquivo .PNG",
-      "Compatível com OBS",
-      "Temas variados"
+      "Premium denim fabric",
+      "2% stretch for comfort",
+      "Slim-fit design",
+      "Available sizes 28-42",
+      "Classic blue color",
+      "5-pocket design"
     ],
     "images": [
-      "/assets/images/webcam-overlays-1.png"
+      "/assets/images/jeans-1.jpg",
+      "/assets/images/jeans-2.jpg"
     ],
-    "thumbnail": "/assets/images/webcam-overlays-thumb.png",
+    "thumbnail": "/assets/images/jeans-thumb.jpg",
     "previews": [
       {
-        "tabName": "Overlays",
-        "type": "panels",
-        "img": "/assets/images/webcam-overlays-preview.png"
+        "tabName": "Fit",
+        "type": "banner",
+        "img": "/assets/images/jeans-preview.jpg"
       }
     ],
-    "priceOriginal": 92.15
+    "priceOriginal": 149.90
+  },
+  {
+    "title": "Leather Jacket Black",
+    "headerTitle": "PREMIUM JACKET",
+    "category": "clothing",
+    "type": "individual",
+    "price": 459.90,
+    "discount": 20,
+    "sold": 87,
+    "featured": true,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
+    "shortDescription": "Genuine leather jacket with classic design and premium quality",
+    "description": "Sophisticated leather jacket made from genuine Italian leather. Features a timeless design perfect for both casual and elegant outfits.",
+    "features": [
+      "Genuine Italian leather",
+      "Timeless classic design",
+      "Multiple pockets",
+      "Sizes XS to XXL",
+      "Easy to maintain",
+      "Lifetime durability"
+    ],
+    "images": [
+      "/assets/images/jacket-1.jpg",
+      "/assets/images/jacket-2.jpg",
+      "/assets/images/jacket-3.jpg"
+    ],
+    "thumbnail": "/assets/images/jacket-thumb.jpg",
+    "previews": [
+      {
+        "tabName": "Design",
+        "type": "banner",
+        "img": "/assets/images/jacket-preview.jpg"
+      }
+    ],
+    "priceOriginal": 579.90
+  },
+  {
+    "title": "The Art of Clean Code",
+    "headerTitle": "PROGRAMMING BOOK",
+    "category": "books",
+    "type": "individual",
+    "price": 89.90,
+    "discount": 12,
+    "sold": 312,
+    "featured": true,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
+    "shortDescription": "Essential guide to writing maintainable and elegant code",
+    "description": "Comprehensive guide to writing clean, maintainable code. Learn best practices, design patterns, and refactoring techniques from industry experts.",
+    "features": [
+      "412 pages, hardcover",
+      "Practical code examples",
+      "Design patterns explained",
+      "Refactoring techniques",
+      "Best practices guide",
+      "English edition"
+    ],
+    "images": [
+      "/assets/images/book-clean-code-1.jpg",
+      "/assets/images/book-clean-code-2.jpg"
+    ],
+    "thumbnail": "/assets/images/book-clean-code-thumb.jpg",
+    "previews": [
+      {
+        "tabName": "Cover",
+        "type": "banner",
+        "img": "/assets/images/book-clean-code-preview.jpg"
+      }
+    ],
+    "priceOriginal": 102.50
+  },
+  {
+    "title": "The Pragmatic Programmer",
+    "headerTitle": "DEVELOPER GUIDE",
+    "category": "books",
+    "type": "individual",
+    "price": 95.90,
+    "discount": 15,
+    "sold": 278,
+    "featured": false,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)",
+    "shortDescription": "Your journey to mastery in software development",
+    "description": "Learn the tips, tricks, and techniques that make pragmatic programmers so effective. Covers debugging, testing, and professional development skills.",
+    "features": [
+      "600+ pages, paperback",
+      "Real-world scenarios",
+      "Debugging tips",
+      "Testing strategies",
+      "Career advice",
+      "Latest edition"
+    ],
+    "images": [
+      "/assets/images/book-pragmatic-1.jpg"
+    ],
+    "thumbnail": "/assets/images/book-pragmatic-thumb.jpg",
+    "previews": [
+      {
+        "tabName": "Preview",
+        "type": "banner",
+        "img": "/assets/images/book-pragmatic-preview.jpg"
+      }
+    ],
+    "priceOriginal": 112.90
+  },
+  {
+    "title": "Design Patterns: Elements of Reusable Object-Oriented Software",
+    "headerTitle": "DESIGN PATTERNS",
+    "category": "books",
+    "type": "individual",
+    "price": 125.90,
+    "discount": 8,
+    "sold": 189,
+    "featured": false,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    "shortDescription": "Classic reference for software design patterns",
+    "description": "The definitive guide to design patterns by Gang of Four. Essential reading for every software architect and senior developer.",
+    "features": [
+      "395 pages, hardcover",
+      "23 design patterns",
+      "UML diagrams",
+      "Real-world examples",
+      "C++ and Smalltalk code",
+      "Collector's edition"
+    ],
+    "images": [
+      "/assets/images/book-patterns-1.jpg"
+    ],
+    "thumbnail": "/assets/images/book-patterns-thumb.jpg",
+    "previews": [
+      {
+        "tabName": "Details",
+        "type": "banner",
+        "img": "/assets/images/book-patterns-preview.jpg"
+      }
+    ],
+    "priceOriginal": 137.90
+  },
+  {
+    "title": "The Self-Taught Programmer",
+    "headerTitle": "BEGINNER'S GUIDE",
+    "category": "books",
+    "type": "individual",
+    "price": 79.90,
+    "discount": 20,
+    "sold": 445,
+    "featured": true,
+    "available": true,
+    "themeColor": "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+    "shortDescription": "Start your programming journey with confidence",
+    "description": "Perfect for beginners wanting to learn programming from scratch. Covers fundamentals, data structures, algorithms, and practical projects.",
+    "features": [
+      "360 pages, paperback",
+      "Python programming focus",
+      "Practical exercises",
+      "Projects included",
+      "Beginner-friendly",
+      "Affordable price"
+    ],
+    "images": [
+      "/assets/images/book-selfprogrammer-1.jpg"
+    ],
+    "thumbnail": "/assets/images/book-selfprogrammer-thumb.jpg",
+    "previews": [
+      {
+        "tabName": "Content",
+        "type": "banner",
+        "img": "/assets/images/book-selfprogrammer-preview.jpg"
+      }
+    ],
+    "priceOriginal": 99.90
   }
 ]

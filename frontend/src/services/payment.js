@@ -11,7 +11,7 @@ export const paymentService = {
    */
   async createPreference(orderData) {
     try {
-      const response = await apiClient.post('/payments/create-preference', orderData);
+      const response = await apiClient.post('/api/payments/create-preference', orderData);
       return response;
     } catch (error) {
       console.error('Error creating preference:', error);
@@ -26,7 +26,7 @@ export const paymentService = {
    */
   async validatePayment(paymentId) {
     try {
-      const response = await apiClient.get(`/payments/status/${paymentId}`);
+      const response = await apiClient.get(`/api/payments/status/${paymentId}`);
       return response;
     } catch (error) {
       console.error('Error validating payment:', error);
@@ -71,7 +71,7 @@ export const paymentService = {
   async initiatePayment(checkoutData) {
     try {
       // Create order in backend
-      const orderResponse = await apiClient.post('/orders', {
+      const orderResponse = await apiClient.post('/api/orders', {
         customer: {
           name: checkoutData.name,
           email: checkoutData.email,
@@ -125,7 +125,7 @@ export const paymentService = {
    */
   async getOrderDetails(orderId) {
     try {
-      const response = await apiClient.get(`/orders/${orderId}`);
+      const response = await apiClient.get(`/api/orders/${orderId}`);
       return response;
     } catch (error) {
       console.error('Error fetching order details:', error);
@@ -140,7 +140,7 @@ export const paymentService = {
    */
   async cancelOrder(orderId) {
     try {
-      await apiClient.patch(`/orders/${orderId}`, { status: 'cancelled' });
+      await apiClient.patch(`/api/orders/${orderId}`, { status: 'cancelled' });
     } catch (error) {
       console.error('Error cancelling order:', error);
       throw new Error('Falha ao cancelar pedido');

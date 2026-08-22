@@ -11,25 +11,27 @@ export const useProductsStore = defineStore('products', () => {
   const searchQuery = ref('');
 
   /**
-   * Fetch all products from API, with fallback to local data
+   * Fetch all products from API
    */
   async function fetchProducts() {
     loading.value = true;
     error.value = null;
 
     try {
-      try {
-        // Try to fetch from API first
-        const response = await apiClient.get('/products');
-        products.value = response.data.data || [];
-      } catch (apiError) {
-        // Fallback to local data if API fails
-        console.warn('API unavailable, using local data:', apiError);
-        products.value = productsData;
+      // Fetch from API - baseURL is http://localhost:3000, endpoint includes /api
+      const response = await apiClient.get('/api/products');
+
+      // Handle API response structure: { success: true, data: [...] }
+      if (response.success && response.data) {
+        products.value = Array.isArray(response.data) ? response.data : [];
+      } else {
+        error.value = 'No products available';
+        products.value = [];
       }
     } catch (err) {
       error.value = err.message;
-      products.value = productsData; // Fallback to local data
+      console.error('Error fetching products:', err);
+      products.value = [];
     } finally {
       loading.value = false;
     }

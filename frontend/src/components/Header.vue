@@ -36,10 +36,12 @@
 
         <!-- Cart Badge -->
         <router-link to="/cart"
+                     data-testid="cart-link"
                      class="relative p-2 rounded-lg transition-colors"
                      :class="darkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'">
           <ShoppingBag class="w-5 h-5" />
           <span v-if="cartCount > 0"
+                data-testid="cart-badge"
                 class="absolute -top-2 -right-2 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
                 :class="darkMode ? 'bg-brand-600 text-white' : 'bg-brand-500 text-white'">
             {{ cartCount }}

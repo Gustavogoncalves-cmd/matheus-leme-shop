@@ -1,5 +1,6 @@
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 
 /**
  * Helmet security headers middleware
@@ -46,8 +47,8 @@ const apiLimiter = rateLimit({
     return req.path === '/api/health';
   },
   keyGenerator: (req) => {
-    // Use X-Forwarded-For header if behind proxy, otherwise use IP
-    return req.headers['x-forwarded-for'] || req.ip;
+    // Use ipKeyGenerator helper for proper IPv6 support
+    return ipKeyGenerator(req);
   },
 });
 
@@ -63,7 +64,8 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => {
-    return req.headers['x-forwarded-for'] || req.ip;
+    // Use ipKeyGenerator helper for proper IPv6 support
+    return ipKeyGenerator(req);
   },
   skip: (req) => {
     // Don't rate limit GET requests
@@ -84,14 +86,21 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`Origin ${origin} is not allowed by CORS policy`));
+      // Log but allow in development for debugging
+      console.warn(`CORS request from unauthorized origin: ${origin}`);
+      if (process.env.NODE_ENV === 'development') {
+        callback(null, true); // Allow in development
+      } else {
+        callback(new Error(`Origin ${origin} is not allowed by CORS policy`));
+      }
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['X-Total-Count', 'X-Page-Number'],
   optionsSuccessStatus: 200,
+  maxAge: 3600,
 };
 
 /**

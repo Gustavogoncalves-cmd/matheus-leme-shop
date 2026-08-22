@@ -1,7 +1,9 @@
 -- Add MercadoPago integration fields to orders table
 ALTER TABLE orders
   ADD COLUMN IF NOT EXISTS mercadopago_preference_id VARCHAR(255),
-  ADD COLUMN IF NOT EXISTS mercadopago_payment_id VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS mercadopago_payment_id VARCHAR(255);
+
+ALTER TABLE orders
   RENAME COLUMN total TO total_price;
 
 -- Create indexes for new fields

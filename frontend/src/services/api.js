@@ -1,6 +1,6 @@
 import { useAuthStore } from '../stores/auth';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 /**
  * HTTP client for API communication
@@ -34,6 +34,7 @@ class ApiClient {
     const options = {
       method,
       headers: this.getHeaders(),
+      credentials: 'include', // Include cookies in requests
     };
 
     if (data && (method === 'POST' || method === 'PATCH' || method === 'PUT')) {
@@ -44,8 +45,13 @@ class ApiClient {
       const response = await fetch(url, options);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        } catch (parseError) {
+          // If response is not JSON, use status text
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
       }
 
       return await response.json();
@@ -99,23 +105,23 @@ export const apiClient = new ApiClient();
 export const productsApi = {
   getAll(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return apiClient.get(`/products?${query}`);
+    return apiClient.get(`/api/products?${query}`);
   },
 
   getById(id) {
-    return apiClient.get(`/products/${id}`);
+    return apiClient.get(`/api/products/${id}`);
   },
 
   create(data) {
-    return apiClient.post('/products', data);
+    return apiClient.post('/api/products', data);
   },
 
   update(id, data) {
-    return apiClient.patch(`/products/${id}`, data);
+    return apiClient.patch(`/api/products/${id}`, data);
   },
 
   delete(id) {
-    return apiClient.delete(`/products/${id}`);
+    return apiClient.delete(`/api/products/${id}`);
   },
 };
 
@@ -124,23 +130,23 @@ export const productsApi = {
  */
 export const cartApi = {
   getCart() {
-    return apiClient.get('/cart');
+    return apiClient.get('/api/cart');
   },
 
   addItem(productId, quantity = 1) {
-    return apiClient.post('/cart/add', { productId, quantity });
+    return apiClient.post('/api/cart/add', { productId, quantity });
   },
 
   removeItem(itemId) {
-    return apiClient.delete(`/cart/${itemId}`);
+    return apiClient.delete(`/api/cart/${itemId}`);
   },
 
   updateQuantity(itemId, quantity) {
-    return apiClient.patch(`/cart/${itemId}`, { quantity });
+    return apiClient.patch(`/api/cart/${itemId}`, { quantity });
   },
 
   clearCart() {
-    return apiClient.delete('/cart');
+    return apiClient.delete('/api/cart');
   },
 };
 
@@ -149,20 +155,20 @@ export const cartApi = {
  */
 export const ordersApi = {
   create(data) {
-    return apiClient.post('/orders', data);
+    return apiClient.post('/api/orders', data);
   },
 
   getAll(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return apiClient.get(`/orders?${query}`);
+    return apiClient.get(`/api/orders?${query}`);
   },
 
   getById(id) {
-    return apiClient.get(`/orders/${id}`);
+    return apiClient.get(`/api/orders/${id}`);
   },
 
   updateStatus(id, status) {
-    return apiClient.patch(`/orders/${id}`, { status });
+    return apiClient.patch(`/api/orders/${id}`, { status });
   },
 };
 
@@ -171,14 +177,14 @@ export const ordersApi = {
  */
 export const authApi = {
   login(email, password) {
-    return apiClient.post('/auth/login', { email, password });
+    return apiClient.post('/api/auth/login', { email, password });
   },
 
   register(name, email, password) {
-    return apiClient.post('/auth/register', { name, email, password });
+    return apiClient.post('/api/auth/register', { name, email, password });
   },
 
   logout() {
-    return apiClient.post('/auth/logout', {});
+    return apiClient.post('/api/auth/logout', {});
   },
 };

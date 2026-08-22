@@ -15,13 +15,39 @@
 
     <!-- Products Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
-      <template v-if="productsStore.filteredProducts.length > 0">
+      <!-- Loading State -->
+      <template v-if="productsStore.loading">
+        <div class="col-span-full text-center py-12">
+          <p :class="darkMode ? 'text-slate-400' : 'text-slate-500'" class="text-sm">
+            Carregando produtos...
+          </p>
+        </div>
+      </template>
+
+      <!-- Error State -->
+      <template v-else-if="productsStore.error">
+        <div class="col-span-full text-center py-12">
+          <p :class="darkMode ? 'text-red-400' : 'text-red-500'" class="text-sm mb-4">
+            {{ productsStore.error }}
+          </p>
+          <button @click="productsStore.fetchProducts"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                  :class="darkMode ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'">
+            Tentar Novamente
+          </button>
+        </div>
+      </template>
+
+      <!-- Products Grid -->
+      <template v-else-if="productsStore.filteredProducts.length > 0">
         <ProductCard v-for="product in productsStore.filteredProducts"
                      :key="product.id"
                      :product="product"
                      :dark-mode="darkMode"
                      @view="selectProduct(product)" />
       </template>
+
+      <!-- Empty State -->
       <template v-else>
         <div class="col-span-full text-center py-12">
           <p :class="darkMode ? 'text-slate-400' : 'text-slate-500'" class="text-sm">
@@ -34,7 +60,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useProductsStore } from '../stores/products';
 import ProductCard from './ProductCard.vue';
 import { Grid3X3, Package, Layers } from 'lucide-vue-next';
@@ -49,6 +75,12 @@ const props = defineProps({
 const emit = defineEmits(['product-selected']);
 
 const productsStore = useProductsStore();
+
+onMounted(() => {
+  if (productsStore.products.length === 0) {
+    productsStore.fetchProducts();
+  }
+});
 
 const categories = ['todos', 'pacote', 'avulso'];
 

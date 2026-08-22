@@ -2,12 +2,19 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Shopping Cart', () => {
   test.beforeEach(async ({ page }) => {
+    // Navigate first, then clear cart from localStorage
+    await page.goto('/');
+    // Wait for page to fully load
+    await page.waitForLoadState('networkidle');
     // Clear cart from localStorage
     await page.evaluate(() => {
-      localStorage.removeItem('cart');
-      localStorage.removeItem('cart_items');
+      try {
+        localStorage.removeItem('cart');
+        localStorage.removeItem('cart_items');
+      } catch (e) {
+        // Ignore localStorage access errors
+      }
     });
-    await page.goto('/');
   });
 
   test('should add product to cart', async ({ page }) => {

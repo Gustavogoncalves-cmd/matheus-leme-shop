@@ -6,7 +6,7 @@
 
       <!-- Header Visual -->
       <div class="relative h-48 w-full overflow-hidden flex items-center justify-center text-white"
-           :style="{ background: product.themeColor }">
+           :style="{ background: product.theme_color || product.themeColor }">
         <div class="absolute inset-0 bg-slate-950/25"></div>
 
         <!-- Grid pattern -->
@@ -43,7 +43,7 @@
             {{ product.category === 'pacote' ? 'STREAMPACK COMBO' : 'ASSET INDIVIDUAL' }}
           </span>
           <h3 class="text-xl sm:text-2xl font-black tracking-tighter uppercase font-display drop-shadow-md">
-            {{ product.headerTitle }}
+            {{ product.header_title || product.headerTitle }}
           </h3>
           <div class="w-8 h-1 bg-white/40 mx-auto mt-1.5 rounded-full"></div>
         </div>
@@ -56,7 +56,7 @@
             {{ product.title }}
           </h3>
           <p class="text-xs mb-4" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">
-            {{ product.shortDescription }}
+            {{ product.short_description || product.shortDescription }}
           </p>
 
           <!-- Features Tags -->
@@ -84,7 +84,7 @@
               </span>
               <div class="flex items-center gap-1.5">
                 <span class="text-2xl font-black font-display" :class="darkMode ? 'text-white' : 'text-slate-900'">
-                  R$ {{ product.price.toFixed(2) }}
+                  R$ {{ price.toFixed(2) }}
                 </span>
                 <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
                       :class="darkMode ? 'bg-slate-800 text-emerald-400 border border-slate-700' : 'bg-emerald-50 text-emerald-700'">
@@ -109,11 +109,13 @@
               <Eye class="w-4 h-4" />
               Ver Detalhes
             </button>
-            <a v-if="product.available" :href="whatsappLink" target="_blank"
-               class="p-3 rounded-xl transition-colors"
-               :class="darkMode ? 'bg-slate-800 text-white hover:bg-slate-700 border border-slate-700' : 'bg-slate-900 hover:bg-slate-800 text-white'">
+            <button v-if="product.available"
+                    @click="addToCart"
+                    data-testid="add-to-cart"
+                    class="p-3 rounded-xl transition-colors"
+                    :class="darkMode ? 'bg-slate-800 text-white hover:bg-slate-700 border border-slate-700' : 'bg-slate-900 hover:bg-slate-800 text-white'">
               <ShoppingBag class="w-4 h-4" />
-            </a>
+            </button>
             <button v-else disabled
                     class="p-3 rounded-xl cursor-not-allowed opacity-50"
                     :class="darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-200 text-slate-400'">
@@ -129,6 +131,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Eye, ShoppingBag, Star } from 'lucide-vue-next';
+import { useCartStore } from '../stores/cart';
 
 const props = defineProps({
   product: {
@@ -142,11 +145,26 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['view']);
+const cartStore = useCartStore();
 
-const priceOriginal = computed(() => props.product.priceOriginal || props.product.price);
+const price = computed(() => parseFloat(props.product.price));
+
+const priceOriginal = computed(() => {
+  const originalPrice = props.product.price_original || props.product.priceOriginal;
+  return originalPrice ? parseFloat(originalPrice) : price.value;
+});
 
 const whatsappLink = computed(() => {
   const message = `Olá Matheus, gostei do ${props.product.title} e gostaria de adquiri-lo!`;
   return `https://wa.me/5511951865795?text=${encodeURIComponent(message)}`;
 });
+
+const addToCart = () => {
+  cartStore.addItem({
+    id: props.product.id,
+    name: props.product.title,
+    price: props.product.price,
+    quantity: 1,
+  });
+};
 </script>

@@ -49,3 +49,13 @@ Thumbs.db
 
 # Vite
 .vite/
+
+# Test artifacts
+test-results/
+playwright-report/
+frontend/test-results/
+frontend/playwright-report/
+
+# Local databases / neural state (agent tooling)
+*.db
+**/.claude-flow/neural/

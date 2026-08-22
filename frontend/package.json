@@ -31,6 +31,8 @@
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-v8": "^4.1.11",
     "@vue/test-utils": "^2.4.11",
+    "animate.css": "^4.1.1",
+    "daisyui": "^5.7.20",
     "happy-dom": "^20.11.6",
     "jsdom": "^30.0.1",
     "vite": "^8.2.0",
