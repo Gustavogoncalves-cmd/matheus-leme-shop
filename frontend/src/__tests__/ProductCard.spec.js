@@ -311,4 +311,126 @@ describe('ProductCard.vue', () => {
     const shoppingButton = buttons[buttons.length - 1];
     expect(shoppingButton.attributes('disabled')).toBeDefined();
   });
+
+  it('renders featured badge border when product is featured', () => {
+    const featuredProduct = { ...mockProduct, featured: true };
+    const wrapper = mount(ProductCard, {
+      props: {
+        product: featuredProduct,
+        darkMode: false,
+      },
+      global: {
+        stubs: {
+          Eye: true,
+          ShoppingBag: true,
+          Star: true,
+        },
+      },
+    });
+
+    const outerDiv = wrapper.find('[class*="from-brand-500"]');
+    expect(outerDiv.exists()).toBe(true);
+    expect(outerDiv.classes()).toContain('bg-gradient-to-r');
+  });
+
+  it('WhatsApp link includes correct phone number', () => {
+    const wrapper = mount(ProductCard, {
+      props: {
+        product: mockProduct,
+        darkMode: false,
+      },
+      global: {
+        stubs: {
+          Eye: true,
+          ShoppingBag: true,
+          Star: true,
+        },
+      },
+    });
+
+    const whatsappLink = wrapper.find('a');
+    const href = whatsappLink.attributes('href');
+    expect(href).toContain('5511951865795');
+  });
+
+  it('WhatsApp link opens in new tab', () => {
+    const wrapper = mount(ProductCard, {
+      props: {
+        product: mockProduct,
+        darkMode: false,
+      },
+      global: {
+        stubs: {
+          Eye: true,
+          ShoppingBag: true,
+          Star: true,
+        },
+      },
+    });
+
+    const whatsappLink = wrapper.find('a');
+    expect(whatsappLink.attributes('target')).toBe('_blank');
+  });
+
+  it('WhatsApp message includes product title', () => {
+    const wrapper = mount(ProductCard, {
+      props: {
+        product: mockProduct,
+        darkMode: false,
+      },
+      global: {
+        stubs: {
+          Eye: true,
+          ShoppingBag: true,
+          Star: true,
+        },
+      },
+    });
+
+    const whatsappLink = wrapper.find('a');
+    const href = whatsappLink.attributes('href');
+    expect(href).toContain(encodeURIComponent('Test Product'));
+  });
+
+  it('displays more features count when features exceed 3', () => {
+    const manyFeaturesProduct = {
+      ...mockProduct,
+      features: ['Feature 1', 'Feature 2', 'Feature 3', 'Feature 4', 'Feature 5']
+    };
+    const wrapper = mount(ProductCard, {
+      props: {
+        product: manyFeaturesProduct,
+        darkMode: false,
+      },
+      global: {
+        stubs: {
+          Eye: true,
+          ShoppingBag: true,
+          Star: true,
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain('+2 itens');
+  });
+
+  it('displays correct gradient background for featured products', () => {
+    const featuredProduct = { ...mockProduct, featured: true };
+    const wrapper = mount(ProductCard, {
+      props: {
+        product: featuredProduct,
+        darkMode: false,
+      },
+      global: {
+        stubs: {
+          Eye: true,
+          ShoppingBag: true,
+          Star: true,
+        },
+      },
+    });
+
+    const wrapper_div = wrapper.find('div');
+    expect(wrapper_div.classes()).toContain('bg-gradient-to-r');
+  });
 });

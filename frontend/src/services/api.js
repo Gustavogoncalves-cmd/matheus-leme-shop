@@ -152,12 +152,17 @@ export const ordersApi = {
     return apiClient.post('/orders', data);
   },
 
-  getAll() {
-    return apiClient.get('/orders');
+  getAll(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return apiClient.get(`/orders?${query}`);
   },
 
   getById(id) {
     return apiClient.get(`/orders/${id}`);
+  },
+
+  updateStatus(id, status) {
+    return apiClient.patch(`/orders/${id}`, { status });
   },
 };
 

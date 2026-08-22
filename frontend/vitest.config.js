@@ -10,13 +10,19 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: [],
+    setupFiles: ['./src/__tests__/setup.js'],
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
         'dist/',
+        'src/__tests__/',
       ],
+    },
+    environmentOptions: {
+      jsdom: {
+        url: 'http://localhost',
+      },
     },
   },
   resolve: {

@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: matheus-leme-backend
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: matheus-shop-db
+          property: connectionString
+      - key: JWT_SECRET
+        sync: false
+      - key: MERCADOPAGO_ACCESS_TOKEN
+        sync: false
+      - key: MERCADOPAGO_WEBHOOK_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: WEBHOOK_URL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+
+  - type: pserv
+    name: matheus-shop-db
+    ipAddress: true
+    plan: starter
+    postgresVersion: 16

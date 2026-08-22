@@ -1,0 +1,139 @@
+version: '3.8'
+
+# Matheus Leme Shop - Production Configuration
+# Uses managed PostgreSQL (Railway/Render)
+# Includes monitoring, logging, and security hardening
+
+services:
+  # Backend API Service - Production
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: matheus-shop-api-prod
+    environment:
+      # Node environment - CRITICAL for production
+      NODE_ENV: production
+
+      # Database connection (managed service - Railway/Render)
+      # Format: postgres://user:password@host:port/database
+      DATABASE_URL: ${DATABASE_URL}
+
+      # API configuration
+      API_PORT: 3000
+      PORT: 3000
+
+      # Security - MUST be strong in production
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRE: 7d
+
+      # MercadoPago Integration
+      MERCADOPAGO_ACCESS_TOKEN: ${MERCADOPAGO_ACCESS_TOKEN}
+      MERCADOPAGO_WEBHOOK_SECRET: ${MERCADOPAGO_WEBHOOK_SECRET}
+
+      # URLs for CORS and webhooks
+      FRONTEND_URL: ${FRONTEND_URL}
+      WEBHOOK_URL: ${WEBHOOK_URL}
+
+      # Logging & Monitoring
+      LOG_LEVEL: info
+      SENTRY_DSN: ${SENTRY_DSN:-}
+
+      # Email notifications (optional)
+      EMAIL_SERVICE: ${EMAIL_SERVICE:-}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+
+    ports:
+      - "3000:3000"
+
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    restart: always
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=backend"
+
+    labels:
+      - "com.example.description=Matheus Shop Backend API"
+      - "monitoring=true"
+
+  # Frontend Service - Production
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: matheus-shop-web-prod
+    environment:
+      # API endpoint
+      VITE_API_BASE_URL: ${VITE_API_URL}
+
+      # Payment integrations (if needed)
+      VITE_STRIPE_PUBLIC_KEY: ${VITE_STRIPE_PUBLIC_KEY:-}
+      VITE_MERCADOPAGO_PUBLIC_KEY: ${VITE_MERCADOPAGO_PUBLIC_KEY:-}
+
+    ports:
+      - "5173:80"
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    restart: always
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=frontend"
+
+    labels:
+      - "com.example.description=Matheus Shop Frontend Web"
+      - "monitoring=true"
+
+# No database service - use managed PostgreSQL
+# From Railway: postgresql://user:password@container.railway.internal:5432/railway
+# From Render: postgresql://user:password@host:5432/database

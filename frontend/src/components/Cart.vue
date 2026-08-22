@@ -93,8 +93,11 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router';
 import { useCartStore } from '../stores/cart';
 import { ShoppingBag, Minus, Plus, Package } from 'lucide-vue-next';
+
+const router = useRouter();
 
 const props = defineProps({
   darkMode: {
@@ -114,6 +117,6 @@ const itemTotal = (item) => {
 
 const checkout = () => {
   emit('checkout');
-  // TODO: Navigate to checkout page
+  router.push('/checkout');
 };
 </script>

@@ -8,11 +8,9 @@ class User {
   static async findByEmail(email) {
     try {
       const result = await pool.query(
-        'SELECT id, email, password, name, role, created_at FROM users WHERE email = $1',
+        'SELECT id, email, password_hash AS password, name, role, created_at FROM users WHERE email = $1',
         [email.toLowerCase()]
       );
-      if (result.rows.length === 0) return null;
-      return result.rows[0];
     } catch (error) {
       console.error('Error finding user by email:', error);
       throw error;

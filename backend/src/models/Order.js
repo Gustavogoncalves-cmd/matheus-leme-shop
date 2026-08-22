@@ -14,9 +14,9 @@ class Order {
 
       // Insert order
       const orderQuery = `
-        INSERT INTO orders (user_id, total_price, shipping_address, status)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id, user_id, total_price, shipping_address, status, created_at
+        INSERT INTO orders (user_id, total_price, shipping_address, status, payment_method)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, user_id, total_price, shipping_address, status, payment_method, created_at
       `;
 
       const orderResult = await client.query(orderQuery, [
@@ -24,6 +24,7 @@ class Order {
         totalPrice,
         JSON.stringify(shippingAddress),
         status,
+        'pending',
       ]);
 
       const orderId = orderResult.rows[0].id;
@@ -70,7 +71,7 @@ class Order {
   static async findById(orderId) {
     try {
       const orderQuery = `
-        SELECT id, user_id, total_price, shipping_address, status, created_at
+        SELECT id, user_id, total_price, shipping_address, status, payment_method, mercadopago_preference_id, mercadopago_payment_id, created_at
         FROM orders
         WHERE id = $1
       `;
@@ -108,7 +109,7 @@ class Order {
   static async findByUserId(userId, limit = 50, offset = 0) {
     try {
       const query = `
-        SELECT id, user_id, total_price, status, created_at
+        SELECT id, user_id, total_price, status, payment_method, mercadopago_payment_id, created_at
         FROM orders
         WHERE user_id = $1
         ORDER BY created_at DESC
@@ -148,7 +149,7 @@ class Order {
         UPDATE orders
         SET status = $1, updated_at = CURRENT_TIMESTAMP
         WHERE id = $2
-        RETURNING id, user_id, total_price, status, created_at
+        RETURNING id, user_id, total_price, status, payment_method, mercadopago_payment_id, created_at
       `;
 
       const result = await pool.query(query, [status, orderId]);

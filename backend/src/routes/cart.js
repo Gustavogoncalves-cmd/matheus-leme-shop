@@ -5,8 +5,44 @@ const { authenticate } = require('../middleware/auth');
 const Product = require('../models/Product');
 
 /**
- * GET /api/cart
- * Get user's cart items
+ * @swagger
+ * /api/cart:
+ *   get:
+ *     summary: Get user cart
+ *     description: Get all items in the user's shopping cart with product details
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Cart items retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/CartItem'
+ *                     total:
+ *                       type: number
+ *                       format: float
+ *                       description: Total cart value
+ *                     count:
+ *                       type: integer
+ *                       description: Number of items
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
  */
 router.get('/', authenticate, async (req, res) => {
   try {
@@ -14,7 +50,7 @@ router.get('/', authenticate, async (req, res) => {
       `SELECT
         ci.id, ci.product_id, ci.quantity,
         p.id as product_id, p.title, p.price, p.thumbnail
-      FROM cart_items ci
+      FROM cart ci
       JOIN products p ON ci.product_id = p.id
       WHERE ci.user_id = $1
       ORDER BY ci.created_at DESC`,
@@ -54,8 +90,60 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 /**
- * POST /api/cart/add
- * Add product to cart (authenticated)
+ * @swagger
+ * /api/cart/add:
+ *   post:
+ *     summary: Add product to cart
+ *     description: Add or update product quantity in user's cart
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - product_id
+ *             properties:
+ *               product_id:
+ *                 type: integer
+ *               quantity:
+ *                 type: integer
+ *                 default: 1
+ *                 minimum: 1
+ *     responses:
+ *       201:
+ *         description: Product added to cart
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     product_id:
+ *                       type: integer
+ *                     quantity:
+ *                       type: integer
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Product not found
+ *       409:
+ *         description: Product not available
+ *       500:
+ *         description: Server error
  */
 router.post('/add', authenticate, async (req, res) => {
   const client = await pool.connect();
@@ -91,7 +179,7 @@ router.post('/add', authenticate, async (req, res) => {
 
     // Check if item already in cart
     const existingResult = await client.query(
-      'SELECT id, quantity FROM cart_items WHERE user_id = $1 AND product_id = $2',
+      'SELECT id, quantity FROM cart WHERE user_id = $1 AND product_id = $2',
       [req.user.id, product_id]
     );
 
@@ -100,7 +188,7 @@ router.post('/add', authenticate, async (req, res) => {
       // Update quantity
       const newQuantity = existingResult.rows[0].quantity + quantity;
       const updateResult = await client.query(
-        `UPDATE cart_items
+        `UPDATE cart
         SET quantity = $1, updated_at = CURRENT_TIMESTAMP
         WHERE id = $2
         RETURNING id, product_id, quantity`,
@@ -110,7 +198,7 @@ router.post('/add', authenticate, async (req, res) => {
     } else {
       // Insert new item
       const insertResult = await client.query(
-        `INSERT INTO cart_items (user_id, product_id, quantity)
+        `INSERT INTO cart (user_id, product_id, quantity)
         VALUES ($1, $2, $3)
         RETURNING id, product_id, quantity`,
         [req.user.id, product_id, quantity]
@@ -142,8 +230,55 @@ router.post('/add', authenticate, async (req, res) => {
 });
 
 /**
- * PATCH /api/cart/:itemId
- * Update cart item quantity
+ * @swagger
+ * /api/cart/{itemId}:
+ *   patch:
+ *     summary: Update cart item quantity
+ *     description: Update the quantity of an item in user's cart
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Cart item ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - quantity
+ *             properties:
+ *               quantity:
+ *                 type: integer
+ *                 minimum: 1
+ *     responses:
+ *       200:
+ *         description: Cart item updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/CartItem'
+ *       400:
+ *         description: Invalid quantity
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Cart item not found
+ *       500:
+ *         description: Server error
  */
 router.patch('/:itemId', authenticate, async (req, res) => {
   try {
@@ -160,7 +295,7 @@ router.patch('/:itemId', authenticate, async (req, res) => {
 
     // Verify ownership
     const cartItemResult = await pool.query(
-      'SELECT id FROM cart_items WHERE id = $1 AND user_id = $2',
+      'SELECT id FROM cart WHERE id = $1 AND user_id = $2',
       [itemId, req.user.id]
     );
 
@@ -173,7 +308,7 @@ router.patch('/:itemId', authenticate, async (req, res) => {
 
     // Update quantity
     const result = await pool.query(
-      `UPDATE cart_items
+      `UPDATE cart
       SET quantity = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING id, product_id, quantity`,
@@ -195,8 +330,44 @@ router.patch('/:itemId', authenticate, async (req, res) => {
 });
 
 /**
- * DELETE /api/cart/:itemId
- * Remove item from cart
+ * @swagger
+ * /api/cart/{itemId}:
+ *   delete:
+ *     summary: Remove item from cart
+ *     description: Delete a specific item from user's cart
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Cart item ID
+ *     responses:
+ *       200:
+ *         description: Item removed from cart
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Cart item not found
+ *       500:
+ *         description: Server error
  */
 router.delete('/:itemId', authenticate, async (req, res) => {
   try {
@@ -204,7 +375,7 @@ router.delete('/:itemId', authenticate, async (req, res) => {
 
     // Verify ownership and delete
     const result = await pool.query(
-      'DELETE FROM cart_items WHERE id = $1 AND user_id = $2 RETURNING id',
+      'DELETE FROM cart WHERE id = $1 AND user_id = $2 RETURNING id',
       [itemId, req.user.id]
     );
 
@@ -230,12 +401,39 @@ router.delete('/:itemId', authenticate, async (req, res) => {
 });
 
 /**
- * DELETE /api/cart
- * Clear entire cart
+ * @swagger
+ * /api/cart:
+ *   delete:
+ *     summary: Clear entire cart
+ *     description: Remove all items from user's cart
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Cart cleared
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
  */
 router.delete('/', authenticate, async (req, res) => {
   try {
-    await pool.query('DELETE FROM cart_items WHERE user_id = $1', [req.user.id]);
+    await pool.query('DELETE FROM cart WHERE user_id = $1', [req.user.id]);
 
     res.json({
       success: true,

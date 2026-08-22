@@ -4,8 +4,70 @@ const Product = require('../models/Product');
 const { authenticate, authorize } = require('../middleware/auth');
 
 /**
- * GET /api/products
- * List all products with optional filtering
+ * @swagger
+ * /api/products:
+ *   get:
+ *     summary: List all products
+ *     description: Get all products with optional filtering, search, and pagination
+ *     tags:
+ *       - Products
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filter by product category
+ *       - in: query
+ *         name: available
+ *         schema:
+ *           type: boolean
+ *         description: Filter by availability
+ *       - in: query
+ *         name: featured
+ *         schema:
+ *           type: boolean
+ *         description: Filter featured products only
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search in product title and description
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 12
+ *         description: Number of products per page
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Number of products to skip
+ *     responses:
+ *       200:
+ *         description: List of products
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Product'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     limit:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *       500:
+ *         description: Server error
  */
 router.get('/', async (req, res) => {
   try {
@@ -48,8 +110,37 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * GET /api/products/:id
- * Get a single product by ID
+ * @swagger
+ * /api/products/{id}:
+ *   get:
+ *     summary: Get product by ID
+ *     description: Retrieve a single product with full details by its ID
+ *     tags:
+ *       - Products
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Product ID
+ *     responses:
+ *       200:
+ *         description: Product details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Product'
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
  */
 router.get('/:id', async (req, res) => {
   try {
@@ -77,8 +168,90 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * POST /api/products
- * Create a new product (admin only)
+ * @swagger
+ * /api/products:
+ *   post:
+ *     summary: Create new product
+ *     description: Create a new product (admin only)
+ *     tags:
+ *       - Products
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - category
+ *               - type
+ *               - description
+ *               - price
+ *             properties:
+ *               title:
+ *                 type: string
+ *               headerTitle:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               shortDescription:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *                 format: float
+ *               discount:
+ *                 type: number
+ *                 format: float
+ *               priceOriginal:
+ *                 type: number
+ *                 format: float
+ *               featured:
+ *                 type: boolean
+ *               available:
+ *                 type: boolean
+ *               themeColor:
+ *                 type: string
+ *               thumbnail:
+ *                 type: string
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               features:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               previews:
+ *                 type: array
+ *     responses:
+ *       201:
+ *         description: Product created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Product'
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *       403:
+ *         description: Forbidden - admin role required
+ *       500:
+ *         description: Server error
  */
 router.post('/', authenticate, authorize('admin'), async (req, res) => {
   try {
@@ -144,8 +317,66 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
 });
 
 /**
- * PATCH /api/products/:id
- * Update a product (admin only)
+ * @swagger
+ * /api/products/{id}:
+ *   patch:
+ *     summary: Update product
+ *     description: Update product fields (admin only)
+ *     tags:
+ *       - Products
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Product ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *                 format: float
+ *               discount:
+ *                 type: number
+ *                 format: float
+ *               featured:
+ *                 type: boolean
+ *               available:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Product updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Product'
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin role required
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
  */
 router.patch('/:id', authenticate, authorize('admin'), async (req, res) => {
   try {
@@ -174,8 +405,43 @@ router.patch('/:id', authenticate, authorize('admin'), async (req, res) => {
 });
 
 /**
- * DELETE /api/products/:id
- * Delete a product (admin only)
+ * @swagger
+ * /api/products/{id}:
+ *   delete:
+ *     summary: Delete product
+ *     description: Delete a product (admin only)
+ *     tags:
+ *       - Products
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Product ID
+ *     responses:
+ *       200:
+ *         description: Product deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin role required
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
  */
 router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
   try {
