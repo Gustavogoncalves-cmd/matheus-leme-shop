@@ -11,6 +11,8 @@ class User {
         'SELECT id, email, password_hash AS password, name, role, created_at FROM users WHERE email = $1',
         [email.toLowerCase()]
       );
+      if (result.rows.length === 0) return null;
+      return result.rows[0];
     } catch (error) {
       console.error('Error finding user by email:', error);
       throw error;
@@ -42,7 +44,7 @@ class User {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const query = `
-      INSERT INTO users (email, password, name, role)
+      INSERT INTO users (email, password_hash, name, role)
       VALUES ($1, $2, $3, $4)
       RETURNING id, email, name, role, created_at
     `;

@@ -59,3 +59,13 @@ frontend/playwright-report/
 # Local databases / neural state (agent tooling)
 *.db
 **/.claude-flow/neural/
+
+# Agent tooling telemetry. Runtime receipts, not source: they churn on every
+# run and land in whatever directory a command happened to run from. The few
+# already tracked at the repo/workspace roots are left alone.
+backend/src/**/.claude-flow/
+frontend/src/**/.claude-flow/
+
+# Uploaded admin panel images (user content, not source)
+backend/public/uploads/*
+!backend/public/uploads/.gitkeep

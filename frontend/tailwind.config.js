@@ -27,7 +27,17 @@ export default {
           800: '#1e293b',
           900: '#0f172a',
           950: '#020617',
-        }
+        },
+        // Cocktail bar neon palette (Matheus Leme redesign)
+        neon: {
+          lime: '#c6ff00',
+          cyan: '#00f0ff',
+          magenta: '#ff00c8',
+          bg: '#0a0a0a',
+          card: '#141414',
+          card2: '#1e1e1e',
+          line: '#2a2a2a',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
@@ -35,17 +45,19 @@ export default {
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'marquee': 'marquee 22s linear infinite',
+      },
+      keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+      },
+      boxShadow: {
+        'neon-lime': '0 0 20px rgba(198,255,0,0.35), 0 0 60px rgba(198,255,0,0.12)',
+        'neon-cyan': '0 0 20px rgba(0,240,255,0.35), 0 0 60px rgba(0,240,255,0.12)',
+        'neon-magenta': '0 0 20px rgba(255,0,200,0.35), 0 0 60px rgba(255,0,200,0.12)',
       },
     },
-  },
-  plugins: [require("daisyui")],
-  daisyui: {
-    themes: ["light", "dark", "cupcake", "bumblebee", "emerald", "corporate", "synthwave"],
-    darkMode: "class",
-    base: true,
-    styled: true,
-    utils: true,
-    logs: false,
-    themeRoot: ":root",
   },
 }

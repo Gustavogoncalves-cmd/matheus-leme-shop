@@ -7,6 +7,7 @@ import CheckoutPage from '../pages/CheckoutPage.vue'
 import PaymentSuccess from '../pages/PaymentSuccess.vue'
 import PaymentCancel from '../pages/PaymentCancel.vue'
 import NotFoundPage from '../pages/NotFoundPage.vue'
+import { useAuthStore } from '../stores/auth'
 
 const routes = [
   {
@@ -49,7 +50,7 @@ const routes = [
     path: '/admin',
     name: 'admin',
     component: AdminPage,
-    meta: { title: 'Admin' }
+    meta: { title: 'Admin', requiresAdmin: true }
   },
   {
     path: '/:pathMatch(.*)*',
@@ -68,6 +69,28 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   document.title = `${to.meta.title || 'Página'} | Matheus Leme | Loja de Streampacks Premium`
   next()
+})
+
+// Admin guard. This is a UX gate only - it hides the panel from non-admins.
+// The real enforcement lives on the API: every admin endpoint re-checks the
+// JWT with authenticate + authorize('admin') server-side.
+router.beforeEach(async (to) => {
+  if (!to.meta.requiresAdmin) return true
+
+  const authStore = useAuthStore()
+
+  if (!authStore.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  // Confirm the stored token is still valid and the role is current before
+  // rendering the panel; a stale localStorage entry must not open the door.
+  const valid = await authStore.verifySession()
+  if (!valid || !authStore.isAdmin) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  return true
 })
 
 export default router

@@ -197,6 +197,71 @@ const validateAdminUserId = [
   handleValidationErrors,
 ];
 
+// ===== Content (CMS) Validation =====
+
+// Keys are used verbatim in SQL parameters and as object keys on the frontend,
+// so restrict them to a safe slug shape rather than accepting arbitrary text.
+const CONTENT_KEY_PATTERN = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
+
+const validateContentKey = [
+  param('key')
+    .trim()
+    .matches(CONTENT_KEY_PATTERN)
+    .withMessage('Key must be lowercase alphanumeric words separated by underscores'),
+  handleValidationErrors,
+];
+
+const validateContentSection = [
+  param('section')
+    .trim()
+    .matches(CONTENT_KEY_PATTERN)
+    .withMessage('Section must be lowercase alphanumeric words separated by underscores'),
+  handleValidationErrors,
+];
+
+const validateContentUpdate = [
+  param('key')
+    .trim()
+    .matches(CONTENT_KEY_PATTERN)
+    .withMessage('Key must be lowercase alphanumeric words separated by underscores'),
+  body('value')
+    .exists()
+    .withMessage('Value is required')
+    .isString()
+    .withMessage('Value must be a string')
+    .isLength({ max: 5000 })
+    .withMessage('Value must be at most 5000 characters'),
+  handleValidationErrors,
+];
+
+const validateContentCreate = [
+  body('key')
+    .trim()
+    .matches(CONTENT_KEY_PATTERN)
+    .withMessage('Key must be lowercase alphanumeric words separated by underscores'),
+  body('value')
+    .optional()
+    .isString()
+    .withMessage('Value must be a string')
+    .isLength({ max: 5000 })
+    .withMessage('Value must be at most 5000 characters'),
+  body('type')
+    .optional()
+    .isIn(['text', 'image', 'color', 'url'])
+    .withMessage('Type must be one of: text, image, color, url'),
+  body('section')
+    .optional()
+    .trim()
+    .matches(CONTENT_KEY_PATTERN)
+    .withMessage('Section must be lowercase alphanumeric words separated by underscores'),
+  body('label')
+    .optional()
+    .trim()
+    .isLength({ max: 255 })
+    .withMessage('Label must be at most 255 characters'),
+  handleValidationErrors,
+];
+
 // ===== Pagination Validation =====
 
 const validatePagination = [
@@ -226,4 +291,8 @@ module.exports = {
   validatePayment,
   validateAdminUserId,
   validatePagination,
+  validateContentKey,
+  validateContentSection,
+  validateContentUpdate,
+  validateContentCreate,
 };

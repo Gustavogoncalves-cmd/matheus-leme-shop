@@ -7,6 +7,7 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "seed": "node seeds/products.js",
+    "seed:content": "node seeds/content.js",
     "migrate": "node scripts/migrate.js",
     "init-db": "node scripts/init-db.js",
     "test": "jest",
@@ -25,6 +26,7 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "mercadopago": "^3.4.0",
+    "multer": "^2.2.0",
     "pg": "^8.23.0",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"

@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocs = require('./swagger');
@@ -28,6 +29,26 @@ app.use(apiLimiter); // Rate limiting for general API
 // Body parsing middleware
 app.use(express.json({ limit: '10kb' })); // Limit JSON payload
 app.use(express.urlencoded({ extended: true, limit: '10kb' })); // Limit URL-encoded payload
+
+// Uploaded images (admin panel assets).
+// Served before the API routes so it is a plain static file read. Helmet sets
+// Cross-Origin-Resource-Policy: same-origin globally, which would block the
+// frontend origin from loading these, so it is relaxed to cross-origin for
+// this path only. Content-Type is pinned and sniffing disabled so a file can
+// never be reinterpreted as a script by the browser.
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    next();
+  },
+  express.static(path.join(__dirname, '../public/uploads'), {
+    index: false,
+    dotfiles: 'deny',
+    maxAge: '7d',
+  })
+);
 
 // Swagger documentation
 app.use('/api-docs', swaggerUi.serve);
@@ -82,6 +103,8 @@ app.use('/api/cart', require('./routes/cart'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/content', require('./routes/content'));
+app.use('/api/upload', require('./routes/upload'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

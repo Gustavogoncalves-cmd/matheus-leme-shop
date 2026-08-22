@@ -42,6 +42,8 @@ npx pm2 stop all           # Stop services
 - `/pm2-backend-stop` - Stop backend
 - `/pm2-frontend-5173` - Start frontend + logs
 - `/pm2-frontend-stop` - Stop frontend
+- `/pm2-backend-restart` - Restart backend only
+- `/pm2-frontend-restart` - Restart frontend only
 - `/pm2-logs` - View all logs
 - `/pm2-status` - Show process status
 

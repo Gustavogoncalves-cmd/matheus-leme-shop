@@ -34,6 +34,17 @@
           </span>
         </button>
 
+        <!-- Support Badge -->
+        <span class="hidden sm:inline-flex items-center gap-1.5 text-[9px] font-bold uppercase px-3.5 py-1.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-100">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Suporte Online
+        </span>
+
+        <!-- Back to Portfolio -->
+        <router-link to="/" class="hidden md:flex items-center gap-1 font-bold text-xs"
+                     :class="darkMode ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'">
+          <ArrowLeft class="w-4 h-4" /> Voltar ao Portfólio
+        </router-link>
+
         <!-- Cart Badge -->
         <router-link to="/cart"
                      data-testid="cart-link"
@@ -71,7 +82,7 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { useCartStore } from '../stores/cart'
-import { Moon, Sun, ShoppingBag } from 'lucide-vue-next'
+import { Moon, Sun, ShoppingBag, ArrowLeft } from 'lucide-vue-next'
 
 const props = defineProps({
   isDark: Boolean

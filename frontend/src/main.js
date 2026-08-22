@@ -4,11 +4,10 @@ import './style.css'
 import App from './App.vue'
 import router from './router'
 
-// Dark mode initialization from localStorage
-const prefersDark = localStorage.getItem('theme') === 'dark' ||
-  (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
-
-if (prefersDark) {
+// Dark mode initialization: defaults to light unless the user explicitly
+// chose dark before (system prefers-color-scheme is intentionally ignored
+// so first-time visitors always land on the light theme).
+if (localStorage.getItem('theme') === 'dark') {
   document.documentElement.classList.add('dark')
 }
 

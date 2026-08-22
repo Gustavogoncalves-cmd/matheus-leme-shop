@@ -1,112 +1,84 @@
 <template>
-  <div :class="darkMode ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'" class="min-h-screen">
-    <!-- Header -->
-    <header class="sticky top-0 z-40 border-b backdrop-blur-md" :class="darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-        <h1 class="text-2xl font-black font-display" :class="darkMode ? 'text-white' : 'text-slate-900'">
-          Matheus Leme Shop
-        </h1>
-        <button @click="darkMode = !darkMode"
-                class="p-2 rounded-lg transition-colors"
-                :class="darkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
-          <Moon v-if="!darkMode" class="w-5 h-5" />
-          <Sun v-else class="w-5 h-5" />
-        </button>
-      </div>
-    </header>
+  <div class="min-h-screen bg-neon-bg text-white">
+    <!-- Header is rendered globally by App.vue -->
 
-    <!-- StreamPack Shop: hero + category filters + product grid + detail modal -->
-    <div ref="productsSection">
-      <StreamPackShop :dark-mode="darkMode" />
-    </div>
+    <!-- Hero + Catalog grid (with category filters + marquee) -->
+    <CatalogShop />
 
-    <!-- Portfolio / Streaming Examples Section (New Improved Version) -->
-    <PortfolioGridSection :dark-mode="darkMode" />
+    <!-- Portfolio: real streamers using our overlays, live embeds -->
+    <PortfolioGridSection id="portfolio" :dark-mode="true" />
 
-    <!-- Testimonials Section (New Improved Version) -->
-    <section id="testimonials">
-      <TestimonialsSectionNew :dark-mode="darkMode" />
-    </section>
+    <!-- Testimonials -->
+    <TestimonialsSectionNew id="depoimentos" :dark-mode="true" />
 
-    <!-- CTA Section -->
-    <section class="py-20 px-4 sm:px-6 lg:px-8" :class="darkMode ? 'bg-gradient-to-r from-brand-900 to-indigo-900' : 'bg-gradient-to-r from-brand-600 to-indigo-600'">
-      <div class="max-w-4xl mx-auto text-center">
-        <h2 class="text-4xl md:text-5xl font-black mb-6 font-display text-white">
-          Pronto para elevar suas transmissões?
+    <!-- CTA -->
+    <section class="py-14 sm:py-20 px-4 sm:px-6 lg:px-8 border-t border-neon-line">
+      <motion.div v-bind="fadeInUp()" class="max-w-4xl mx-auto text-center">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-black mb-6 font-display uppercase">
+          <template v-for="(part, i) in ctaTitleParts" :key="i"><span
+            v-if="part.accent" class="text-neon-lime">{{ part.text }}</span><template
+            v-else>{{ part.text }}</template></template>
         </h2>
-        <p class="text-lg text-white/90 mb-8">
-          Comece hoje mesmo com nossos pacotes especiais e designs exclusivos
+        <p class="text-base sm:text-lg text-slate-400 mb-8">
+          {{ content.text('cta_subtitle', 'Escolha seu combo ou monte seu setup com peças avulsas') }}
         </p>
-        <button @click="scrollToProducts"
-                class="px-8 py-4 rounded-xl font-bold text-lg bg-white text-brand-600 hover:bg-slate-100 transition-all duration-300 shadow-lg inline-flex items-center gap-2">
+        <motion.button @click="scrollToMenu"
+                v-bind="scaleGlow()"
+                class="px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-black uppercase tracking-wide text-xs sm:text-sm bg-neon-lime text-black hover:shadow-neon-lime transition-shadow inline-flex items-center gap-2">
           <Zap class="w-5 h-5" />
-          Explorar Catálogo
-        </button>
-      </div>
+          Ver Catálogo
+        </motion.button>
+      </motion.div>
     </section>
 
     <!-- Footer -->
-    <footer class="py-12 px-4 sm:px-6 lg:px-8 border-t"
-            :class="darkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'">
-      <div class="max-w-7xl mx-auto text-center">
-        <p class="text-sm" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">
-          © 2024 Matheus Leme Shop. Todos os direitos reservados.
+    <footer id="contato" class="py-12 px-4 sm:px-6 lg:px-8 border-t border-neon-line bg-neon-card">
+      <motion.div v-bind="fadeIn()" class="max-w-7xl mx-auto text-center">
+        <p class="font-black uppercase tracking-widest text-white mb-2">
+          {{ content.text('footer_brand', 'Matheus Leme') }}
         </p>
-        <p class="text-xs mt-2" :class="darkMode ? 'text-slate-500' : 'text-slate-500'">
-          Suporte: suporte@matheusleme.com.br | WhatsApp: +55 11 95186-5795
+        <p class="text-sm text-slate-400">
+          {{ content.text('footer_tagline', 'Loja de Streampacks Premium — Design e Motion para Streamers') }}
         </p>
-      </div>
+        <p class="text-xs text-slate-500 mt-2">
+          {{ content.text('footer_contact', 'Pedidos e dúvidas: contato@matheusleme.com.br | WhatsApp: +55 11 95186-5795') }}
+        </p>
+        <p class="text-xs text-slate-600 mt-4">
+          {{ content.text('footer_copyright', '© 2026 Matheus Leme. Todos os direitos reservados.') }}
+        </p>
+      </motion.div>
     </footer>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import { Moon, Sun, Zap } from 'lucide-vue-next';
-import { useProductsStore } from '../stores/products';
-import StreamPackShop from '../components/StreamPackShop.vue';
+import { computed, onMounted } from 'vue';
+import { Zap } from 'lucide-vue-next';
+import { motion } from 'motion-v';
+import { fadeIn, fadeInUp, scaleGlow } from '../composables/useAnimations';
+import { useContentStore } from '../stores/content';
+import { accentText } from '../utils/accentText';
+import CatalogShop from '../components/CatalogShop.vue';
 import PortfolioGridSection from '../components/PortfolioGridSection.vue';
 import TestimonialsSectionNew from '../components/TestimonialsSectionNew.vue';
 
-const darkMode = ref(false);
-const productsSection = ref(null);
+const content = useContentStore();
 
-const productsStore = useProductsStore();
+// The CTA headline highlights one word in neon. The stored value marks it with
+// *asterisks* instead of HTML so owner-supplied copy is never rendered as
+// markup - see utils/accentText.js.
+const ctaTitleParts = computed(() =>
+  accentText(content.text('cta_title', 'Pronto para elevar sua *live*?'))
+);
 
-const scrollToProducts = () => {
-  if (productsSection.value) {
-    productsSection.value.scrollIntoView({ behavior: 'smooth' });
-  }
+const scrollToMenu = () => {
+  document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
 };
 
-// Lifecycle
+// The whole page (hero, portfolio, testimonials, CTA, footer) reads from this
+// one store, so a single fetch here covers every child. fetchContent swallows
+// its own errors - a CMS outage leaves the hardcoded fallbacks in place.
 onMounted(() => {
-  productsStore.fetchProducts();
-  // Load dark mode from localStorage
-  const savedDarkMode = localStorage.getItem('darkMode');
-  if (savedDarkMode !== null) {
-    darkMode.value = JSON.parse(savedDarkMode);
-  }
-});
-
-// Watch dark mode changes
-watch(darkMode, (newVal) => {
-  localStorage.setItem('darkMode', JSON.stringify(newVal));
+  content.fetchContent();
 });
 </script>
-
-<style scoped>
-/* Custom animations */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-</style>

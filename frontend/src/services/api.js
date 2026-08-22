@@ -3,6 +3,29 @@ import { useAuthStore } from '../stores/auth';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 /**
+ * Pull the most useful message out of an error response.
+ *
+ * The backend answers with { success: false, error, details? }, and validation
+ * failures put the actionable text in details[].message. A previous version
+ * read `.message` (which the API never sends) inside a try/catch that also
+ * swallowed the thrown Error itself, so every failure surfaced as a bare
+ * "HTTP 400" with the real reason discarded.
+ */
+async function extractErrorMessage(response) {
+  const fallback = `HTTP ${response.status}: ${response.statusText}`;
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    return fallback;
+  }
+
+  const detail = payload?.details?.[0]?.message;
+  return detail || payload?.error || payload?.message || fallback;
+}
+
+/**
  * HTTP client for API communication
  */
 class ApiClient {
@@ -45,13 +68,7 @@ class ApiClient {
       const response = await fetch(url, options);
 
       if (!response.ok) {
-        try {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `HTTP ${response.status}`);
-        } catch (parseError) {
-          // If response is not JSON, use status text
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+        throw new Error(await extractErrorMessage(response));
       }
 
       return await response.json();
@@ -94,6 +111,39 @@ class ApiClient {
    */
   async put(endpoint, data) {
     return this.request('PUT', endpoint, data);
+  }
+
+  /**
+   * Multipart upload. Deliberately does not reuse request(): the browser must
+   * set Content-Type itself so the multipart boundary is generated correctly,
+   * so the JSON headers are skipped and only Authorization is carried over.
+   */
+  async upload(endpoint, formData) {
+    const authStore = useAuthStore();
+    const headers = {};
+    if (authStore.token) {
+      headers.Authorization = `Bearer ${authStore.token}`;
+    }
+
+    const url = `${this.baseURL}${endpoint}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(await extractErrorMessage(response));
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`API Error [POST ${endpoint}]:`, error);
+      throw error;
+    }
   }
 }
 
@@ -186,5 +236,60 @@ export const authApi = {
 
   logout() {
     return apiClient.post('/api/auth/logout', {});
+  },
+
+  getProfile() {
+    return apiClient.get('/api/auth/profile');
+  },
+};
+
+/**
+ * Site content (CMS) API methods.
+ * Reads are public; writes require an admin token.
+ */
+export const contentApi = {
+  /** Flat { key: value } map used by the public site. */
+  getMap() {
+    return apiClient.get('/api/content');
+  },
+
+  /** Full rows with type/section/label metadata, for the admin editor. */
+  getAll() {
+    return apiClient.get('/api/content?full=true');
+  },
+
+  getBySection(section) {
+    return apiClient.get(`/api/content/section/${section}`);
+  },
+
+  update(key, value) {
+    return apiClient.put(`/api/content/${key}`, { value });
+  },
+
+  create(field) {
+    return apiClient.post('/api/content', field);
+  },
+
+  remove(key) {
+    return apiClient.delete(`/api/content/${key}`);
+  },
+};
+
+/**
+ * Image upload API methods (admin only).
+ */
+export const uploadApi = {
+  upload(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    return apiClient.upload('/api/upload', formData);
+  },
+
+  list() {
+    return apiClient.get('/api/upload');
+  },
+
+  remove(filename) {
+    return apiClient.delete(`/api/upload/${filename}`);
   },
 };

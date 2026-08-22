@@ -1,29 +1,22 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import Header from './components/Header.vue'
+import { ref, onMounted, provide } from 'vue'
+import HeaderDark from './components/HeaderDark.vue'
 
-const isDark = ref(false)
+// Matheus Leme redesign: bar site is locked to dark/neon. isDark stays
+// provided (true, always) so page-level components that already read it
+// via inject('isDark', ...) keep working without a second toggle path.
+const isDark = ref(true)
 
 onMounted(() => {
-  isDark.value = document.documentElement.classList.contains('dark')
+  document.documentElement.classList.add('dark')
 })
 
-const toggleDarkMode = () => {
-  isDark.value = !isDark.value
-
-  if (isDark.value) {
-    document.documentElement.classList.add('dark')
-    localStorage.setItem('theme', 'dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-    localStorage.setItem('theme', 'light')
-  }
-}
+provide('isDark', isDark)
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-slate-950 transition-colors">
-    <Header :is-dark="isDark" @toggle-dark-mode="toggleDarkMode" />
+  <div class="min-h-screen bg-neon-bg transition-colors">
+    <HeaderDark />
     <router-view />
   </div>
 </template>

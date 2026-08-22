@@ -44,6 +44,15 @@
             Produtos
           </button>
 
+          <button @click="selectTab('content')"
+                  class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors"
+                  :class="activeTab === 'content'
+                    ? 'bg-brand-600 text-white'
+                    : darkMode ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-700 hover:bg-slate-100'">
+            <span class="text-xl">📝</span>
+            Conteúdo
+          </button>
+
           <button @click="selectTab('orders')"
                   class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors"
                   :class="activeTab === 'orders'
@@ -104,6 +113,11 @@
           </div>
         </div>
 
+        <!-- Content Tab -->
+        <div v-if="activeTab === 'content'">
+          <AdminContentEditor :dark-mode="darkMode" />
+        </div>
+
         <!-- Orders Tab -->
         <div v-if="activeTab === 'orders'">
           <div v-if="!selectedOrder">
@@ -137,6 +151,7 @@ import AdminProductList from '../components/AdminProductList.vue';
 import AdminProductForm from '../components/AdminProductForm.vue';
 import AdminOrderList from '../components/AdminOrderList.vue';
 import AdminOrderDetail from '../components/AdminOrderDetail.vue';
+import AdminContentEditor from '../components/AdminContentEditor.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -174,8 +189,8 @@ const toggleDarkMode = () => {
 /**
  * Handle logout
  */
-const handleLogout = () => {
-  authStore.logout();
+const handleLogout = async () => {
+  await authStore.logout();
   router.push({ name: 'login' });
 };
 
@@ -254,17 +269,12 @@ const viewOrder = (orderId) => {
  * Initialize on mount
  */
 onMounted(async () => {
-  // Check authentication
-  if (!authStore.isAuthenticated) {
+  // The router guard already verified the session against the API before this
+  // component rendered; this is a cheap defensive re-check for direct mounts.
+  if (!authStore.isAuthenticated || !authStore.isAdmin) {
     router.push({ name: 'login' });
     return;
   }
-
-  // TODO: Check if user is admin
-  // if (!authStore.isAdmin) {
-  //   router.push({ name: 'shop' });
-  //   return;
-  // }
 
   // Load dark mode preference
   const savedDarkMode = localStorage.getItem('darkMode') === 'true';

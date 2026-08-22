@@ -1,133 +1,243 @@
 <script setup>
-import { Play, TrendingUp, Eye, Heart } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { Play, Palette, LayoutGrid, Video, CheckCircle2 } from 'lucide-vue-next'
+import { motion } from 'motion-v'
+import { ref, computed } from 'vue'
+import { fadeInUp, scaleGlow, staggerContainer, staggerItem } from '../composables/useAnimations'
+import { useContentStore } from '../stores/content'
 
 defineProps({
   darkMode: Boolean
 })
 
-const streamingExamples = ref([
+// Section headings are owner-editable; the hardcoded copy stays as fallback.
+const content = useContentStore()
+
+const portfolioItems = ref([
+  // Edição de vídeo
   {
     id: 1,
-    name: 'Luna Stream',
-    description: 'Streamer de RPG que aumentou engagement em 240% com nossos overlays',
-    color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    productsCount: 4,
-    improvement: 240,
-    views: '12.5K',
-    likes: '1.2K'
+    name: 'Canal do Biskela',
+    description: 'Editor oficial do canal de Biskela. Produção de vídeos longos, shorts e criação de thumbnails chamativas.',
+    color: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #1e1b4b 100%)',
+    category: 'video',
+    type: 'Vídeo',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Vídeos Longos', 'Shorts', 'Thumbnails'],
   },
   {
     id: 2,
-    name: 'Nexus Gaming',
-    description: 'Competidor de FPS com transições 4K e alertas profissionais',
-    color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    productsCount: 6,
-    improvement: 185,
-    views: '8.3K',
-    likes: '890'
+    name: 'Canal do Spinelli',
+    description: 'Pré-produção completa para o canal do Spinelli. Edição de shorts dinâmicos, vídeos longos fluidos e thumbnails exclusivas.',
+    color: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #db2777 100%)',
+    category: 'video',
+    type: 'Vídeo',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Vídeos Longos', 'Shorts', 'Thumbnails'],
   },
   {
     id: 3,
-    name: 'Crystal Content',
-    description: 'Criadora de conteúdo que triplicou visualizações com mídia kit',
-    color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    productsCount: 3,
-    improvement: 320,
-    views: '15.7K',
-    likes: '1.8K'
+    name: 'Cavani',
+    description: 'Responsável pela edição de vídeos longos e curtos, e pela criação das thumbnails da conversão do Cavani.',
+    color: 'linear-gradient(135deg, #7c2d12 0%, #b45309 50%, #1e1b4b 100%)',
+    category: 'video',
+    type: 'Vídeo',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Vídeos Longos', 'Thumbnails'],
   },
   {
     id: 4,
-    name: 'Phoenix Streams',
-    description: 'Streamer de variedade com pacote completo de assets',
-    color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    productsCount: 5,
-    improvement: 215,
-    views: '9.1K',
-    likes: '1.1K'
+    name: 'Uri Riffo',
+    description: 'Edição de vídeos de formato longo e design de thumbnails profissionais para o canal Uri Riffo.',
+    color: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 50%, #0891b2 100%)',
+    category: 'video',
+    type: 'Vídeo',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Vídeos Longos', 'Thumbnails'],
   },
   {
     id: 5,
-    name: 'Void Gaming',
-    description: 'Competidor hardcore com customizações totais de overlays',
-    color: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-    productsCount: 7,
-    improvement: 290,
-    views: '11.2K',
-    likes: '1.4K'
+    name: 'Xoão',
+    description: 'Edição rítmica e criação de cortes de alta retenção para o canal.',
+    color: 'linear-gradient(135deg, #581c87 0%, #db2777 100%)',
+    category: 'video',
+    type: 'Vídeo',
+    frames: 2,
+    status: 'Concluído',
+    tags: ['Shorts'],
   },
   {
     id: 6,
-    name: 'Aurora Studios',
-    description: 'Estúdio profissional com pacote white-label exclusivo',
-    color: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-    productsCount: 8,
-    improvement: 400,
-    views: '18.9K',
-    likes: '2.3K'
+    name: 'Ninogod',
+    description: 'Edição técnica detalhada de vídeos para Ninogod, com alta fidelidade visual e de áudio.',
+    color: 'linear-gradient(135deg, #312e81 0%, #6d28d9 50%, #9333ea 100%)',
+    category: 'video',
+    type: 'Vídeo',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Vídeos Longos'],
+  },
+  // Identidade visual / branding
+  {
+    id: 7,
+    name: 'Fire Skins',
+    description: 'Desenvolvimento de identidade visual e logo gamer para a Fire Skins.',
+    color: 'linear-gradient(135deg, #7c2d12 0%, #dc2626 50%, #1c1917 100%)',
+    category: 'design',
+    type: 'Imagem',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Identidade Visual', 'Branding'],
+  },
+  {
+    id: 8,
+    name: 'Wealth Skins',
+    description: 'Conceito criativo de branding e marca exclusiva para Wealth Skins.',
+    color: 'linear-gradient(135deg, #713f12 0%, #ca8a04 50%, #1c1917 100%)',
+    category: 'design',
+    type: 'Imagem',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Identidade Visual', 'Branding'],
+  },
+  {
+    id: 9,
+    name: 'Click Skins',
+    description: 'Identidade visual completa e presença digital moderna criada para Click Skins.',
+    color: 'linear-gradient(135deg, #0c4a6e 0%, #0891b2 50%, #1e1b4b 100%)',
+    category: 'design',
+    type: 'Imagem',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Identidade Visual', 'Social Media'],
+  },
+  {
+    id: 10,
+    name: 'Blitz Skins',
+    description: 'Marca enérgica e logotipo marcante desenvolvidos para a Blitz Skins.',
+    color: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 50%, #7c3aed 100%)',
+    category: 'design',
+    type: 'Imagem',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Identidade Visual', 'Branding'],
+  },
+  {
+    id: 11,
+    name: 'Chairman Skins',
+    description: 'Feed conceitual e criativos desenvolvidos para Chairman Skins.',
+    color: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #7c3aed 100%)',
+    category: 'design',
+    type: 'Imagem',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Social Media', 'Territory'],
+  },
+  {
+    id: 12,
+    name: 'Floripa Stars',
+    description: 'Artes gráficas e criativos desenvolvidos para Floripa Stars, organização competitiva de CS2.',
+    color: 'linear-gradient(135deg, #713f12 0%, #b45309 50%, #1c1917 100%)',
+    category: 'design',
+    type: 'Imagem',
+    frames: 3,
+    status: 'Concluído',
+    tags: ['Social Media'],
   },
 ])
 
 const hoveredId = ref(null)
+const activeCategory = ref('all')
+
+const categories = [
+  { key: 'all', label: 'Todos', icon: LayoutGrid },
+  { key: 'video', label: 'Edição de Vídeo', icon: Video },
+  { key: 'design', label: 'Identidade Visual', icon: Palette },
+]
+
+const filteredItems = computed(() => {
+  if (activeCategory.value === 'all') return portfolioItems.value
+  return portfolioItems.value.filter(e => e.category === activeCategory.value)
+})
 </script>
 
 <template>
   <!-- Portfolio Section -->
-  <section class="py-20 px-4 sm:px-6 lg:px-8" :class="darkMode ? 'bg-slate-900' : 'bg-slate-50'">
+  <section class="py-14 sm:py-20 px-4 sm:px-6 lg:px-8" :class="darkMode ? 'bg-slate-900' : 'bg-slate-50'">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
-      <div class="text-center mb-16">
-        <h2 class="text-4xl md:text-5xl font-black mb-4 font-display">
-          Exemplos de Streamers
+      <motion.div v-bind="fadeInUp()" class="text-center mb-12 sm:mb-16">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-black mb-4 font-display">
+          {{ content.text('portfolio_title', 'Nosso Portfólio') }}
         </h2>
-        <p class="text-lg max-w-2xl mx-auto"
+        <p class="text-base sm:text-lg max-w-2xl mx-auto"
            :class="darkMode ? 'text-slate-300' : 'text-slate-600'">
-          Veja como nossos produtos estão transformando transmissões e gerando resultados incríveis
+          {{ content.text('portfolio_subtitle', 'Trabalhos reais de edição de vídeo e identidade visual entregues para canais, marcas e organizações.') }}
         </p>
-      </div>
+      </motion.div>
+
+      <!-- Category filters -->
+      <motion.div v-bind="fadeInUp(0.1)" class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-10 sm:mb-12">
+        <button v-for="cat in categories" :key="cat.key"
+                @click="activeCategory = cat.key"
+                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all"
+                :class="activeCategory === cat.key
+                  ? (darkMode ? 'bg-white text-black' : 'bg-brand-600 text-white shadow-md shadow-brand-500/20')
+                  : (darkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200')">
+          <component :is="cat.icon" class="w-4 h-4" />
+          {{ cat.label }}
+        </button>
+      </motion.div>
 
       <!-- Portfolio Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div v-for="(example, idx) in streamingExamples"
-             :key="example.id"
-             class="group overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
-             :class="darkMode ? 'bg-slate-800 hover:bg-slate-750' : 'bg-white hover:shadow-xl'"
-             @mouseenter="hoveredId = example.id"
-             @mouseleave="hoveredId = null"
-             style="animation: fadeInUp 0.6s ease-out forwards"
-             :style="{ animationDelay: `${idx * 0.1}s` }">
+      <motion.div v-bind="staggerContainer()"
+                  :key="activeCategory"
+                  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <motion.div v-for="item in filteredItems"
+             :key="item.id"
+             v-bind="{ ...staggerItem(), ...scaleGlow() }"
+             class="group overflow-hidden rounded-xl shadow-lg transition-shadow duration-300 cursor-pointer"
+             :class="darkMode ? 'bg-slate-800 hover:shadow-neon-cyan' : 'bg-white hover:shadow-xl'"
+             @mouseenter="hoveredId = item.id"
+             @mouseleave="hoveredId = null">
 
           <!-- Image Container -->
           <div class="relative h-48 overflow-hidden bg-gradient-to-br"
-               :style="{ background: example.color }">
-            <!-- Play Button -->
+               :style="{ background: item.color }">
+            <!-- Category icon watermark -->
+            <component :is="item.category === 'video' ? Video : Palette"
+                       class="absolute -right-4 -bottom-4 w-28 h-28 text-white/10" stroke-width="1.5" />
+
+            <!-- Center icon -->
             <div class="absolute inset-0 flex items-center justify-center">
               <div class="p-4 rounded-full transition-all duration-300"
-                   :class="hoveredId === example.id ? 'bg-white/30 scale-110' : 'bg-white/20'">
-                <Play class="w-12 h-12 text-white" :fill="hoveredId === example.id ? 'currentColor' : 'none'" />
+                   :class="hoveredId === item.id ? 'bg-white/30 scale-110' : 'bg-white/20'">
+                <component :is="item.category === 'video' ? Play : Palette"
+                           class="w-12 h-12 text-white" :fill="item.category === 'video' && hoveredId === item.id ? 'currentColor' : 'none'" />
               </div>
             </div>
 
             <!-- Overlay -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-            <!-- Badge -->
-            <div class="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-md"
-                 :class="hoveredId === example.id ? 'bg-emerald-500/90 scale-110' : 'bg-emerald-500/70'">
-              ✓ VERIFICADO
+            <!-- Frames + type badges -->
+            <div class="absolute top-4 left-4 flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold text-white bg-black/40 backdrop-blur-md">
+                {{ item.frames }} Frames
+              </span>
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold text-white bg-black/40 backdrop-blur-md uppercase">
+                {{ item.type }}
+              </span>
             </div>
 
-            <!-- Stats Hover -->
-            <div class="absolute inset-0 flex items-end justify-between p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
-              <div class="flex items-center gap-2 text-white text-sm">
-                <Eye size="16" />
-                {{ example.views }}
-              </div>
-              <div class="flex items-center gap-2 text-red-300 text-sm">
-                <Heart size="16" />
-                {{ example.likes }}
-              </div>
+            <!-- Status badge -->
+            <div class="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-md flex items-center gap-1"
+                 :class="hoveredId === item.id ? 'bg-emerald-500/90 scale-110' : 'bg-emerald-500/70'">
+              <CheckCircle2 class="w-3.5 h-3.5" />
+              {{ item.status }}
             </div>
           </div>
 
@@ -135,43 +245,34 @@ const hoveredId = ref(null)
           <div class="p-6">
             <!-- Icon + Label -->
             <div class="flex items-center gap-2 mb-3">
-              <TrendingUp class="w-5 h-5 text-emerald-500" />
-              <span class="text-sm font-bold text-emerald-500 uppercase tracking-wider">Streamer Profissional</span>
+              <component :is="item.category === 'video' ? Video : Palette" class="w-5 h-5 text-emerald-500" />
+              <span class="text-sm font-bold text-emerald-500 uppercase tracking-wider">
+                {{ categories.find(c => c.key === item.category)?.label }}
+              </span>
             </div>
 
             <!-- Title -->
             <h3 class="text-xl font-bold mb-2 group-hover:text-brand-500 transition-colors"
                 :class="darkMode ? 'text-white' : 'text-slate-900'">
-              {{ example.name }}
+              {{ item.name }}
             </h3>
 
             <!-- Description -->
             <p class="text-sm mb-4 line-clamp-2"
                :class="darkMode ? 'text-slate-400' : 'text-slate-600'">
-              {{ example.description }}
+              {{ item.description }}
             </p>
 
             <!-- Divider -->
             <div class="border-t mb-4" :class="darkMode ? 'border-slate-700' : 'border-slate-200'"></div>
 
-            <!-- Stats -->
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div class="p-3 rounded-lg" :class="darkMode ? 'bg-slate-700/50' : 'bg-slate-50'">
-                <p class="text-xs" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">
-                  Produtos
-                </p>
-                <p class="text-lg font-bold" :class="darkMode ? 'text-white' : 'text-slate-900'">
-                  {{ example.productsCount }}
-                </p>
-              </div>
-              <div class="p-3 rounded-lg" :class="darkMode ? 'bg-slate-700/50' : 'bg-slate-50'">
-                <p class="text-xs" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">
-                  Melhoria
-                </p>
-                <p class="text-lg font-bold text-brand-500">
-                  +{{ example.improvement }}%
-                </p>
-              </div>
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-1.5 mb-4">
+              <span v-for="tag in item.tags" :key="tag"
+                    class="text-[11px] font-semibold px-2 py-1 rounded-md"
+                    :class="darkMode ? 'bg-slate-700/50 text-slate-300' : 'bg-slate-100 text-slate-600'">
+                {{ tag }}
+              </span>
             </div>
 
             <!-- CTA -->
@@ -183,40 +284,29 @@ const hoveredId = ref(null)
               Ver Detalhes →
             </button>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <!-- CTA Section -->
-      <div class="mt-16 p-8 rounded-2xl text-center"
+      <motion.div v-bind="fadeInUp()" class="mt-12 sm:mt-16 p-6 sm:p-8 rounded-2xl text-center"
            :class="darkMode ? 'bg-gradient-to-r from-brand-900/30 to-pink-900/30 border border-brand-500/20' : 'bg-gradient-to-r from-brand-50 to-pink-50 border border-brand-200'">
         <h3 class="text-2xl font-bold mb-2 font-display"
             :class="darkMode ? 'text-white' : 'text-slate-900'">
-          Quer ser o próximo case de sucesso?
+          Quer seu canal ou marca no nosso portfólio?
         </h3>
         <p class="mb-4" :class="darkMode ? 'text-slate-300' : 'text-slate-600'">
-          Escolha seu pacote agora e comece a transformar seu stream
+          {{ content.text('portfolio_cta_text', 'Fale com a gente e leve sua identidade visual ou edição de vídeo para o próximo nível') }}
         </p>
         <button class="px-8 py-3 rounded-lg font-bold transition-all duration-300 hover:scale-105 transform"
                 :class="darkMode ? 'bg-brand-600 text-white hover:bg-brand-500 shadow-lg' : 'bg-brand-600 text-white hover:bg-brand-700 shadow-lg'">
-          Começar Agora
+          Fazer Orçamento
         </button>
-      </div>
+      </motion.div>
     </div>
   </section>
 </template>
 
 <style scoped>
-@keyframes fadeInUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
