@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { apiClient } from '../services/api';
-import productsData from '../../../shared/products-data.json';
+// Products fetched from API - fallback data not needed in frontend
 
 export const useProductsStore = defineStore('products', () => {
   const products = ref([]);

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const { generateToken, authenticate } = require('../middleware/auth');
+const { validateRegister, validateLogin } = require('../middleware/validation');
 
 /**
  * @swagger
@@ -71,24 +72,9 @@ const { generateToken, authenticate } = require('../middleware/auth');
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/register', async (req, res) => {
+router.post('/register', validateRegister, async (req, res) => {
   try {
     const { email, password, name } = req.body;
-
-    // Validation
-    if (!email || !password || !name) {
-      return res.status(400).json({
-        success: false,
-        error: 'Email, password, and name are required',
-      });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        error: 'Password must be at least 6 characters',
-      });
-    }
 
     // Check if user exists
     const existingUser = await User.findByEmail(email);
@@ -119,10 +105,10 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
+    // Don't expose internal error details
     res.status(500).json({
       success: false,
       error: 'Registration failed',
-      message: error.message,
     });
   }
 });
@@ -178,17 +164,9 @@ router.post('/register', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post('/login', async (req, res) => {
+router.post('/login', validateLogin, async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Validation
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        error: 'Email and password are required',
-      });
-    }
 
     // Find user
     const user = await User.findByEmail(email);
@@ -225,10 +203,10 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
+    // Don't expose internal error details
     res.status(500).json({
       success: false,
       error: 'Login failed',
-      message: error.message,
     });
   }
 });
