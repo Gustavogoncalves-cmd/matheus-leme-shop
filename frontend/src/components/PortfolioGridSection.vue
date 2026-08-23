@@ -17,6 +17,7 @@ const portfolioItems = ref([
   {
     id: 1,
     name: 'Canal do Biskela',
+    cover: '/assets/portfolio/biskela.jpg',
     description: 'Editor oficial do canal de Biskela. Produção de vídeos longos, shorts e criação de thumbnails chamativas.',
     color: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #1e1b4b 100%)',
     category: 'video',
@@ -28,6 +29,7 @@ const portfolioItems = ref([
   {
     id: 2,
     name: 'Canal do Spinelli',
+    cover: '/assets/portfolio/spinelli.jpg',
     description: 'Pré-produção completa para o canal do Spinelli. Edição de shorts dinâmicos, vídeos longos fluidos e thumbnails exclusivas.',
     color: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #db2777 100%)',
     category: 'video',
@@ -39,6 +41,7 @@ const portfolioItems = ref([
   {
     id: 3,
     name: 'Cavani',
+    cover: '/assets/portfolio/cavani.jpg',
     description: 'Responsável pela edição de vídeos longos e curtos, e pela criação das thumbnails da conversão do Cavani.',
     color: 'linear-gradient(135deg, #7c2d12 0%, #b45309 50%, #1e1b4b 100%)',
     category: 'video',
@@ -50,6 +53,7 @@ const portfolioItems = ref([
   {
     id: 4,
     name: 'Uri Riffo',
+    cover: '/assets/portfolio/riffo.jpg',
     description: 'Edição de vídeos de formato longo e design de thumbnails profissionais para o canal Uri Riffo.',
     color: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 50%, #0891b2 100%)',
     category: 'video',
@@ -61,6 +65,7 @@ const portfolioItems = ref([
   {
     id: 5,
     name: 'Xoão',
+    cover: '/assets/portfolio/xoao.jpg',
     description: 'Edição rítmica e criação de cortes de alta retenção para o canal.',
     color: 'linear-gradient(135deg, #581c87 0%, #db2777 100%)',
     category: 'video',
@@ -72,6 +77,7 @@ const portfolioItems = ref([
   {
     id: 6,
     name: 'Ninogod',
+    cover: '/assets/portfolio/ninogod.jpg',
     description: 'Edição técnica detalhada de vídeos para Ninogod, com alta fidelidade visual e de áudio.',
     color: 'linear-gradient(135deg, #312e81 0%, #6d28d9 50%, #9333ea 100%)',
     category: 'video',
@@ -84,6 +90,7 @@ const portfolioItems = ref([
   {
     id: 7,
     name: 'Fire Skins',
+    cover: '/assets/portfolio/fireskins.jpg',
     description: 'Desenvolvimento de identidade visual e logo gamer para a Fire Skins.',
     color: 'linear-gradient(135deg, #7c2d12 0%, #dc2626 50%, #1c1917 100%)',
     category: 'design',
@@ -95,6 +102,7 @@ const portfolioItems = ref([
   {
     id: 8,
     name: 'Wealth Skins',
+    cover: '/assets/portfolio/wealth.jpg',
     description: 'Conceito criativo de branding e marca exclusiva para Wealth Skins.',
     color: 'linear-gradient(135deg, #713f12 0%, #ca8a04 50%, #1c1917 100%)',
     category: 'design',
@@ -106,6 +114,7 @@ const portfolioItems = ref([
   {
     id: 9,
     name: 'Click Skins',
+    cover: '/assets/portfolio/clickskins.jpg',
     description: 'Identidade visual completa e presença digital moderna criada para Click Skins.',
     color: 'linear-gradient(135deg, #0c4a6e 0%, #0891b2 50%, #1e1b4b 100%)',
     category: 'design',
@@ -117,6 +126,7 @@ const portfolioItems = ref([
   {
     id: 10,
     name: 'Blitz Skins',
+    cover: '/assets/portfolio/blitz.jpg',
     description: 'Marca enérgica e logotipo marcante desenvolvidos para a Blitz Skins.',
     color: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 50%, #7c3aed 100%)',
     category: 'design',
@@ -128,6 +138,7 @@ const portfolioItems = ref([
   {
     id: 11,
     name: 'Chairman Skins',
+    cover: '/assets/portfolio/chairman.jpg',
     description: 'Feed conceitual e criativos desenvolvidos para Chairman Skins.',
     color: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #7c3aed 100%)',
     category: 'design',
@@ -139,6 +150,7 @@ const portfolioItems = ref([
   {
     id: 12,
     name: 'Floripa Stars',
+    cover: '/assets/portfolio/floripastars.jpg',
     description: 'Artes gráficas e criativos desenvolvidos para Floripa Stars, organização competitiva de CS2.',
     color: 'linear-gradient(135deg, #713f12 0%, #b45309 50%, #1c1917 100%)',
     category: 'design',
@@ -207,14 +219,29 @@ const filteredItems = computed(() => {
           <!-- Image Container -->
           <div class="relative h-48 overflow-hidden bg-gradient-to-br"
                :style="{ background: item.color }">
+            <!-- Real cover art for the client's work. The gradient above stays
+                 as the backdrop, so a card whose image is missing or still
+                 loading degrades to the previous look instead of a blank box. -->
+            <img v-if="item.cover"
+                 :src="item.cover"
+                 :alt="`Capa do trabalho: ${item.name}`"
+                 loading="lazy"
+                 decoding="async"
+                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
+                 :class="hoveredId === item.id ? 'scale-105' : 'scale-100'" />
+
             <!-- Category icon watermark -->
             <component :is="item.category === 'video' ? Video : Palette"
                        class="absolute -right-4 -bottom-4 w-28 h-28 text-white/10" stroke-width="1.5" />
 
+            <!-- Scrim: keeps the play glyph readable over a photo cover,
+                 which a translucent white pill alone cannot guarantee. -->
+            <div v-if="item.cover" class="absolute inset-0 bg-black/25"></div>
+
             <!-- Center icon -->
             <div class="absolute inset-0 flex items-center justify-center">
-              <div class="p-4 rounded-full transition-all duration-300"
-                   :class="hoveredId === item.id ? 'bg-white/30 scale-110' : 'bg-white/20'">
+              <div class="p-4 rounded-full backdrop-blur-sm transition-all duration-300"
+                   :class="hoveredId === item.id ? 'bg-black/45 scale-110' : 'bg-black/35'">
                 <component :is="item.category === 'video' ? Play : Palette"
                            class="w-12 h-12 text-white" :fill="item.category === 'video' && hoveredId === item.id ? 'currentColor' : 'none'" />
               </div>
