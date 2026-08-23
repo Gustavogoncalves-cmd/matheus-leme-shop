@@ -28,7 +28,7 @@ export const useAdminStore = defineStore('admin', () => {
     try {
       const query = new URLSearchParams(filters).toString();
       const response = await apiClient.get(`/api/products?${query}`);
-      products.value = response.data || [];
+      products.value = response.data?.data || response.data || [];
     } catch (err) {
       productsError.value = err.message;
       console.error('Error fetching products:', err);
@@ -110,7 +110,7 @@ export const useAdminStore = defineStore('admin', () => {
     try {
       const query = new URLSearchParams(filters).toString();
       const response = await apiClient.get(`/api/orders?${query}`);
-      orders.value = response.data || [];
+      orders.value = response.data?.data || response.data || [];
     } catch (err) {
       ordersError.value = err.message;
       console.error('Error fetching orders:', err);

@@ -692,7 +692,7 @@ router.get('/dashboard', async (req, res) => {
   try {
     // Total revenue
     const revenueResult = await pool.query(
-      'SELECT SUM(total_price)::float as total_revenue FROM orders WHERE status != $1',
+      'SELECT SUM(total)::float as total_revenue FROM orders WHERE status != $1',
       ['cancelled']
     );
     const totalRevenue = revenueResult.rows[0].total_revenue || 0;
@@ -712,7 +712,7 @@ router.get('/dashboard', async (req, res) => {
 
     // Recent orders (last 10)
     const recentOrdersResult = await pool.query(
-      `SELECT id, user_id, total_price, status, created_at
+      `SELECT id, user_id, total, status, created_at
        FROM orders
        ORDER BY created_at DESC
        LIMIT 10`
@@ -724,7 +724,7 @@ router.get('/dashboard', async (req, res) => {
       `SELECT
         p.id, p.title, p.price, p.thumbnail,
         SUM(oi.quantity)::int as total_sold,
-        SUM(oi.quantity * oi.price)::float as total_revenue
+        SUM(oi.quantity * oi.price_at_purchase)::float as total_revenue
       FROM products p
       LEFT JOIN order_items oi ON p.id = oi.product_id
       GROUP BY p.id, p.title, p.price, p.thumbnail
@@ -741,7 +741,7 @@ router.get('/dashboard', async (req, res) => {
       `SELECT
         DATE_TRUNC('month', created_at)::date as month,
         COUNT(*)::int as order_count,
-        SUM(total_price)::float as revenue
+        SUM(total)::float as revenue
       FROM orders
       WHERE created_at >= CURRENT_DATE - INTERVAL '12 months' AND status != $1
       GROUP BY DATE_TRUNC('month', created_at)
@@ -768,6 +768,95 @@ router.get('/dashboard', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch dashboard data',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * Alias: GET /api/admin/metrics
+ * Same as /dashboard — used by admin dashboard UI for fetching statistics
+ */
+router.get('/metrics', async (req, res) => {
+  try {
+    // Total revenue
+    const revenueResult = await pool.query(
+      'SELECT SUM(total)::float as total_revenue FROM orders WHERE status != $1',
+      ['cancelled']
+    );
+    const totalRevenue = revenueResult.rows[0].total_revenue || 0;
+
+    // Total orders
+    const ordersCountResult = await pool.query(
+      'SELECT COUNT(*) as count FROM orders WHERE status != $1',
+      ['cancelled']
+    );
+    const totalOrders = parseInt(ordersCountResult.rows[0].count, 10);
+
+    // Total customers
+    const customersResult = await pool.query(
+      'SELECT COUNT(DISTINCT user_id) as count FROM orders'
+    );
+    const totalCustomers = parseInt(customersResult.rows[0].count, 10);
+
+    // Recent orders (last 10)
+    const recentOrdersResult = await pool.query(
+      `SELECT id, user_id, total, status, created_at
+       FROM orders
+       ORDER BY created_at DESC
+       LIMIT 10`
+    );
+    const recentOrders = recentOrdersResult.rows;
+
+    // Top products (most sold)
+    const topProductsResult = await pool.query(
+      `SELECT
+        p.id, p.title, p.price, p.thumbnail,
+        SUM(oi.quantity)::int as total_sold,
+        SUM(oi.quantity * oi.price_at_purchase)::float as total_revenue
+      FROM products p
+      LEFT JOIN order_items oi ON p.id = oi.product_id
+      GROUP BY p.id, p.title, p.price, p.thumbnail
+      ORDER BY total_sold DESC NULLS LAST
+      LIMIT 5`
+    );
+    const topProducts = topProductsResult.rows.map(row => ({
+      ...row,
+      thumbnail: typeof row.thumbnail === 'string' ? JSON.parse(row.thumbnail) : row.thumbnail,
+    }));
+
+    // Monthly sales chart data (last 12 months)
+    const chartDataResult = await pool.query(
+      `SELECT
+        DATE_TRUNC('month', created_at)::date as month,
+        COUNT(*)::int as order_count,
+        SUM(total)::float as revenue
+      FROM orders
+      WHERE created_at >= CURRENT_DATE - INTERVAL '12 months' AND status != $1
+      GROUP BY DATE_TRUNC('month', created_at)
+      ORDER BY month ASC`,
+      ['cancelled']
+    );
+    const chartData = {
+      monthly_sales: chartDataResult.rows,
+    };
+
+    res.json({
+      success: true,
+      data: {
+        totalRevenue,
+        totalOrders,
+        totalCustomers,
+        recentOrders,
+        topProducts,
+        chartData,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch metrics',
       message: error.message,
     });
   }
