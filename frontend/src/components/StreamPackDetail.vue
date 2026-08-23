@@ -32,6 +32,19 @@ const originalTotal = computed(() => {
 
 const currentPreview = computed(() => props.pack?.previews?.[previewTab.value] ?? null)
 
+/**
+ * Artwork uploaded through the admin panel, shown behind the CSS preview.
+ * Uploads are stored as a root-relative path ("/uploads/x.png") served by the
+ * API, not by Vite, so the API origin is prefixed. Absolute URLs pass through.
+ */
+const previewImage = computed(() => {
+  const src = props.pack?.thumbnail || props.pack?.images?.[0]
+  if (!src) return null
+  if (/^(https?:)?\/\//.test(src) || src.startsWith('data:')) return src
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+  return `${apiBase}${src.startsWith('/') ? '' : '/'}${src}`
+})
+
 const buyUrl = computed(() => {
   if (!props.pack) return '#'
   const kind = props.pack.category === 'pacote' ? 'Combo' : 'Peça Individual'
@@ -96,6 +109,14 @@ const customizeUrl = computed(() => {
                   </div>
 
                   <div class="w-full h-full flex flex-col justify-center items-center text-center p-6 relative">
+                    <!-- Uploaded artwork sits behind the CSS preview: the neon
+                         mockup above keeps its own stacking context (z-10), so
+                         a product with no image renders exactly as before. -->
+                    <img v-if="previewImage"
+                         :src="previewImage"
+                         alt=""
+                         aria-hidden="true"
+                         class="absolute inset-0 w-full h-full object-cover" />
                     <div class="absolute inset-0" :style="{ background: pack.themeColor, opacity: 0.35 }"></div>
 
                     <div class="relative z-10 w-full h-full flex flex-col justify-center items-center">

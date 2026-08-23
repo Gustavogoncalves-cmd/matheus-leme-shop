@@ -28,8 +28,11 @@ module.exports = {
       },
       error_file: './logs/error.log',
       out_file: './logs/out.log',
-      watch: ['src', 'index.html'],
-      ignore_watch: ['node_modules', 'logs', 'dist'],
+      // No PM2 watch here: Vite's own HMR already reloads on source changes.
+      // Running both made PM2 restart Vite, Vite rewrite its cache, PM2 see
+      // that write and restart again - a loop that hit 1800+ restarts and
+      // tore the app down mid-login, so the session never reached storage.
+      watch: false,
       max_memory_restart: '300M'
     }
   ]

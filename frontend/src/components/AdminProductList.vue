@@ -384,16 +384,23 @@ const handleImageUploaded = async (imageUrl) => {
   try {
     if (!uploadingProductId.value) return;
 
-    // Update product with image URL
     const product = adminStore.getProductById(uploadingProductId.value);
-    if (product) {
-      await adminStore.updateProduct(uploadingProductId.value, {
-        ...product,
-        imageUrl: imageUrl,
-      });
-      closeImageUploadModal();
-      alert('Imagem uploadada com sucesso!');
-    }
+    if (!product) return;
+
+    // The products table stores images in `thumbnail` (the cover the shop
+    // renders) and `images` (the gallery). Product.update() drops any key
+    // outside its allow-list, so writing an `imageUrl` field looked like it
+    // succeeded while saving nothing - which is why the storefront never
+    // picked the upload up.
+    const gallery = Array.isArray(product.images) ? product.images : [];
+
+    await adminStore.updateProduct(uploadingProductId.value, {
+      thumbnail: imageUrl,
+      images: gallery.includes(imageUrl) ? gallery : [...gallery, imageUrl],
+    });
+
+    closeImageUploadModal();
+    alert('Imagem salva com sucesso.');
   } catch (err) {
     console.error('Error updating product image:', err);
     alert('Erro ao salvar imagem: ' + err.message);

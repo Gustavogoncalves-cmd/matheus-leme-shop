@@ -19,6 +19,34 @@ export const useAdminStore = defineStore('admin', () => {
   const dashboardError = ref(null);
 
   /**
+   * Map raw DB row to camelCase shape expected by Vue components.
+   * Duplicated from products store to keep admin self-contained.
+   */
+  function mapProductRow(row) {
+    return {
+      id: row.id,
+      title: row.title,
+      headerTitle: row.header_title || row.headerTitle,
+      category: row.category,
+      type: row.type,
+      shortDescription: row.short_description || row.shortDescription,
+      longDescription: row.description || row.longDescription,
+      price: Number(row.price || row.priceCurrent || 0),
+      priceOriginal: Number(row.price_original || row.priceOriginal || row.price),
+      discount: row.discount,
+      stock: row.stock ?? 0,
+      sold: row.sold ?? 0,
+      featured: row.featured,
+      available: row.available,
+      themeColor: row.theme_color || row.themeColor,
+      thumbnail: row.thumbnail,
+      images: row.images || [],
+      features: row.features || [],
+      previews: row.previews || [],
+    };
+  }
+
+  /**
    * Fetch all products with optional filters
    */
   async function fetchProducts(filters = {}) {
@@ -28,8 +56,10 @@ export const useAdminStore = defineStore('admin', () => {
     try {
       const query = new URLSearchParams(filters).toString();
       const response = await apiClient.get(`/api/products?${query}`);
-      // API returns { success, data: [...], pagination: {...} }
-      products.value = response.data || [];
+      // API returns { success, data: [...] }
+      products.value = Array.isArray(response.data)
+        ? response.data.map(mapProductRow)
+        : [];
     } catch (err) {
       productsError.value = err.message;
       console.error('Error fetching products:', err);
