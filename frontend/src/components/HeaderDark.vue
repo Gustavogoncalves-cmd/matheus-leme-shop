@@ -44,6 +44,8 @@ const closeMobile = () => { mobileOpen.value = false }
         <router-link to="/cart"
                      data-testid="cart-link"
                      class="relative p-2 rounded-lg text-slate-300 hover:text-neon-lime transition-colors">
+          <!-- Invisível: target da animação "voo pro carrinho". Não afeta o layout. -->
+          <span data-testid="cart-rocket-target" class="absolute -inset-2 pointer-events-none" />
           <ShoppingBag class="w-5 h-5" />
           <span v-if="cartCount > 0"
                 data-testid="cart-badge"
