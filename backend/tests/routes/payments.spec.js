@@ -1,10 +1,17 @@
 const request = require('supertest');
 
-// Mock payment config before requiring app
+// Mock payment config before requiring app.
+//
+// src/routes/payments.js calls the module's named helpers - createPreference()
+// and getPaymentStatus() - not the MercadoPagoClient class. The mock used to
+// stub only MercadoPago.MercadoPagoClient, so createPreference was undefined
+// and every happy-path case threw inside the route and surfaced as a 500.
 jest.mock('../../src/config/payment', () => ({
   MercadoPago: {
     MercadoPagoClient: jest.fn(),
   },
+  getClient: jest.fn(),
+  createPreference: jest.fn(),
   validateWebhookSignature: jest.fn(),
   getPaymentStatus: jest.fn(),
 }));
@@ -18,7 +25,11 @@ jest.mock('../../src/models/Order');
 
 const pool = require('../../src/config/database');
 const Order = require('../../src/models/Order');
-const { MercadoPago, validateWebhookSignature } = require('../../src/config/payment');
+const {
+  createPreference,
+  validateWebhookSignature,
+  getPaymentStatus,
+} = require('../../src/config/payment');
 
 describe('Payments Routes', () => {
   let userToken;
@@ -77,9 +88,7 @@ describe('Payments Routes', () => {
       };
 
       Order.findById.mockResolvedValue(mockOrder);
-      MercadoPago.MercadoPagoClient.mockImplementation(() => ({
-        preference: { create: jest.fn().mockResolvedValue(mockPreference) },
-      }));
+      createPreference.mockResolvedValue(mockPreference);
       pool.query.mockResolvedValue({});
 
       const res = await request(app)
@@ -166,9 +175,7 @@ describe('Payments Routes', () => {
       };
 
       Order.findById.mockResolvedValue(mockOrder);
-      MercadoPago.MercadoPagoClient.mockImplementation(() => ({
-        preference: { create: jest.fn().mockResolvedValue(mockPreference) },
-      }));
+      createPreference.mockResolvedValue(mockPreference);
       pool.query.mockResolvedValue({});
 
       const res = await request(app)
@@ -207,9 +214,7 @@ describe('Payments Routes', () => {
 
       Order.findById.mockResolvedValue(mockOrder);
       Order.updateStatus.mockResolvedValue({ id: 1, status: 'paid' });
-      MercadoPago.MercadoPagoClient.mockImplementation(() => ({
-        payment: { get: jest.fn().mockResolvedValue(mockPayment) },
-      }));
+      getPaymentStatus.mockResolvedValue(mockPayment);
       pool.query.mockResolvedValue({});
 
       const res = await request(app)
@@ -251,9 +256,7 @@ describe('Payments Routes', () => {
 
       Order.findById.mockResolvedValue(mockOrder);
       Order.updateStatus.mockResolvedValue({ id: 1, status: 'paid' });
-      MercadoPago.MercadoPagoClient.mockImplementation(() => ({
-        payment: { get: jest.fn().mockResolvedValue(mockPayment) },
-      }));
+      getPaymentStatus.mockResolvedValue(mockPayment);
       pool.query.mockResolvedValue({});
 
       const res = await request(app)
@@ -281,9 +284,7 @@ describe('Payments Routes', () => {
 
       Order.findById.mockResolvedValue(mockOrder);
       Order.updateStatus.mockResolvedValue({ id: 1, status: 'payment_failed' });
-      MercadoPago.MercadoPagoClient.mockImplementation(() => ({
-        payment: { get: jest.fn().mockResolvedValue(mockPayment) },
-      }));
+      getPaymentStatus.mockResolvedValue(mockPayment);
       pool.query.mockResolvedValue({});
 
       const res = await request(app)
@@ -333,9 +334,7 @@ describe('Payments Routes', () => {
         date_created: '2024-08-21T00:00:00Z',
       };
 
-      MercadoPago.MercadoPagoClient.mockImplementation(() => ({
-        payment: { get: jest.fn().mockResolvedValue(mockPayment) },
-      }));
+      getPaymentStatus.mockResolvedValue(mockPayment);
 
       const res = await request(app)
         .get('/api/payments/status/payment_123')

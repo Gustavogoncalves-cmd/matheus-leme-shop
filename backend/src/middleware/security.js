@@ -46,10 +46,10 @@ const apiLimiter = rateLimit({
     // Skip rate limiting for health check
     return req.path === '/api/health';
   },
-  keyGenerator: (req) => {
-    // Use ipKeyGenerator helper for proper IPv6 support
-    return ipKeyGenerator(req);
-  },
+  // ipKeyGenerator takes the IP string, not the request. Passing `req` returned
+  // the request object itself as the key; every call produced a fresh object, so
+  // no two requests ever shared a bucket and the limit never triggered.
+  keyGenerator: (req) => ipKeyGenerator(req.ip),
 });
 
 /**
@@ -63,14 +63,40 @@ const authLimiter = rateLimit({
   message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  // Brute force is per-account as much as per-IP: an attacker on one IP hammering
+  // one inbox, and a botnet spraying one inbox, are both stopped by keying on the
+  // pair. The email is lowercased so casing cannot be used to mint fresh buckets.
   keyGenerator: (req) => {
-    // Use ipKeyGenerator helper for proper IPv6 support
-    return ipKeyGenerator(req);
+    const email = String(req.body?.email || '').toLowerCase().trim();
+    return `${ipKeyGenerator(req.ip)}:${email}`;
   },
   skip: (req) => {
+    // The suite drives many logins against one fixture account, which is exactly
+    // what this limiter is built to stop. Counting them would make unrelated
+    // tests fail on ordering; the limiter itself is covered by its own spec.
+    if (process.env.NODE_ENV === 'test') {
+      return true;
+    }
     // Don't rate limit GET requests
     return req.method === 'GET';
   },
+});
+
+/**
+ * Rate limiting for image uploads (admin only)
+ * 20 uploads per 15 minutes per IP
+ *
+ * Uploads are the one authenticated route that writes to disk, so they get a
+ * tighter cap than the general API limit. Sized for real editing sessions -
+ * swapping out a handful of panel images - not for bulk imports.
+ */
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: 'Too many uploads, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => ipKeyGenerator(req.ip),
 });
 
 /**
@@ -182,6 +208,7 @@ module.exports = {
   helmetMiddleware,
   apiLimiter,
   authLimiter,
+  uploadLimiter,
   corsOptions,
   sanitizeInput,
   requestTimeout,

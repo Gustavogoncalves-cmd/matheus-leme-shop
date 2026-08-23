@@ -18,6 +18,17 @@ jest.mock('../../src/models/User');
 
 const User = require('../../src/models/User');
 
+// Registration enforces a complexity rule (8+ chars, upper, lower, digit) in
+// src/middleware/validation.js. These fixtures used to send 'password123',
+// which has no uppercase, so every "valid data" case was rejected at the
+// validator and never reached the route under test.
+const VALID_PASSWORD = 'Password123';
+
+// Validation failures answer with { error: 'Validation Error', details: [...] };
+// the actionable text lives in details[].message, not in the top-level error.
+const validationMessages = (res) =>
+  (res.body.details || []).map((detail) => detail.message).join(' | ');
+
 describe('Auth Routes', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -31,7 +42,7 @@ describe('Auth Routes', () => {
     it('should register new user with valid data', async () => {
       const userData = {
         email: 'newuser@test.com',
-        password: 'password123',
+        password: VALID_PASSWORD,
         name: 'New User',
       };
 
@@ -64,13 +75,13 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({
-          password: 'password123',
+          password: VALID_PASSWORD,
           name: 'User',
         });
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.error).toContain('required');
+      expect(validationMessages(res)).toContain('valid email address');
     });
 
     it('should reject registration with missing password', async () => {
@@ -96,7 +107,7 @@ describe('Auth Routes', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.error).toContain('at least 6 characters');
+      expect(validationMessages(res)).toContain('at least 8 characters');
     });
 
     it('should reject registration with existing email', async () => {
@@ -106,7 +117,7 @@ describe('Auth Routes', () => {
         .post('/api/auth/register')
         .send({
           email: 'existing@test.com',
-          password: 'password123',
+          password: VALID_PASSWORD,
           name: 'User',
         });
 
@@ -118,7 +129,7 @@ describe('Auth Routes', () => {
     it('should include JWT token in registration response', async () => {
       const userData = {
         email: 'test@test.com',
-        password: 'password123',
+        password: VALID_PASSWORD,
         name: 'Test User',
       };
 
@@ -149,7 +160,7 @@ describe('Auth Routes', () => {
         .post('/api/auth/register')
         .send({
           email: 'test@test.com',
-          password: 'password123',
+          password: VALID_PASSWORD,
           name: 'User',
         });
 
@@ -167,7 +178,7 @@ describe('Auth Routes', () => {
     it('should login user with valid credentials', async () => {
       const loginData = {
         email: 'user@test.com',
-        password: 'password123',
+        password: VALID_PASSWORD,
       };
 
       const mockUser = {
@@ -195,12 +206,12 @@ describe('Auth Routes', () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          password: 'password123',
+          password: VALID_PASSWORD,
         });
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.error).toContain('required');
+      expect(validationMessages(res)).toContain('valid email address');
     });
 
     it('should reject login with missing password', async () => {
@@ -221,7 +232,7 @@ describe('Auth Routes', () => {
         .post('/api/auth/login')
         .send({
           email: 'nonexistent@test.com',
-          password: 'password123',
+          password: VALID_PASSWORD,
         });
 
       expect(res.status).toBe(401);
@@ -269,7 +280,7 @@ describe('Auth Routes', () => {
         .post('/api/auth/login')
         .send({
           email: 'user@test.com',
-          password: 'password123',
+          password: VALID_PASSWORD,
         });
 
       expect(res.status).toBe(200);
@@ -284,7 +295,7 @@ describe('Auth Routes', () => {
         .post('/api/auth/login')
         .send({
           email: 'user@test.com',
-          password: 'password123',
+          password: VALID_PASSWORD,
         });
 
       expect(res.status).toBe(500);
