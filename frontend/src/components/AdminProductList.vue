@@ -1,5 +1,6 @@
 <template>
   <div class="w-full">
+    <!-- Import AdminImageUploader component -->
     <div class="bg-white dark:bg-slate-900 rounded-lg shadow-lg p-6"
          :class="darkMode ? 'bg-slate-900' : 'bg-white'">
 
@@ -74,66 +75,71 @@
 
       <!-- Table -->
       <div v-else class="overflow-x-auto">
-        <table class="w-full">
+        <table class="w-full border-collapse">
           <thead>
-            <tr class="border-b" :class="darkMode ? 'border-slate-800' : 'border-slate-200'">
-              <th class="text-left py-3 px-4 font-semibold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
+            <tr class="border-b" :class="darkMode ? 'border-slate-800 bg-slate-800/50' : 'border-slate-200 bg-slate-50'">
+              <th class="text-left py-4 px-4 font-semibold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
                 Nome
               </th>
-              <th class="text-left py-3 px-4 font-semibold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
+              <th class="text-left py-4 px-4 font-semibold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
                 Preço
               </th>
-              <th class="text-left py-3 px-4 font-semibold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
+              <th class="text-left py-4 px-4 font-semibold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
                 Categoria
               </th>
-              <th class="text-left py-3 px-4 font-semibold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
+              <th class="text-left py-4 px-4 font-semibold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
                 Status
               </th>
-              <th class="text-left py-3 px-4 font-semibold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
+              <th class="text-left py-4 px-4 font-semibold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
                 Ações
               </th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="product in paginatedProducts" :key="product.id"
-                class="border-b hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                class="border-b hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                 :class="darkMode ? 'border-slate-800' : 'border-slate-200'">
-              <td class="py-3 px-4" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
+              <td class="py-4 px-4" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
                 <div>
                   <p class="font-semibold" :class="darkMode ? 'text-white' : 'text-slate-900'">
                     {{ product.title }}
                   </p>
-                  <p class="text-sm" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">
-                    {{ product.shortDescription }}
+                  <p class="text-sm mt-1" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">
+                    {{ product.shortDescription || '—' }}
                   </p>
                 </div>
               </td>
-              <td class="py-3 px-4 font-semibold" :class="darkMode ? 'text-white' : 'text-slate-900'">
-                R$ {{ product.price.toFixed(2) }}
-                <span v-if="product.discount > 0" class="text-red-600 text-sm ml-2">
+              <td class="py-4 px-4 font-semibold whitespace-nowrap" :class="darkMode ? 'text-white' : 'text-slate-900'">
+                R$ {{ typeof product.price === 'number' ? product.price.toFixed(2) : '0.00' }}
+                <span v-if="product.discount && product.discount > 0" class="text-red-600 text-sm ml-2">
                   -{{ product.discount }}%
                 </span>
               </td>
-              <td class="py-3 px-4 text-sm" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">
+              <td class="py-4 px-4 text-sm" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">
                 {{ getCategoryLabel(product.category) }}
               </td>
-              <td class="py-3 px-4">
-                <span class="px-3 py-1 rounded-full text-xs font-semibold"
+              <td class="py-4 px-4">
+                <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold"
                       :class="product.available ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
                   {{ product.available ? 'Disponível' : 'Indisponível' }}
                 </span>
               </td>
-              <td class="py-3 px-4">
-                <div class="flex gap-2">
+              <td class="py-4 px-4">
+                <div class="flex gap-2 items-center flex-wrap">
                   <button @click="$emit('edit', product.id)"
-                          class="text-xs font-semibold px-3 py-1 rounded transition-colors"
-                          :class="darkMode ? 'text-brand-400 hover:text-brand-300' : 'text-brand-600 hover:text-brand-700'">
-                    Editar
+                          class="text-xs font-semibold px-3 py-1 rounded transition-colors whitespace-nowrap"
+                          :class="darkMode ? 'text-brand-400 hover:text-brand-300 hover:bg-brand-400/10' : 'text-brand-600 hover:text-brand-700 hover:bg-brand-50'">
+                    ✏ Editar
+                  </button>
+                  <button @click="openImageUploadModal(product.id, product.title)"
+                          class="text-xs font-semibold px-3 py-1 rounded transition-colors whitespace-nowrap"
+                          :class="darkMode ? 'text-cyan-400 hover:text-cyan-300 hover:bg-cyan-400/10' : 'text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50'">
+                    🖼 Imagem
                   </button>
                   <button @click="confirmDelete(product.id, product.title)"
-                          class="text-xs font-semibold px-3 py-1 rounded transition-colors"
-                          :class="darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'">
-                    Deletar
+                          class="text-xs font-semibold px-3 py-1 rounded transition-colors whitespace-nowrap"
+                          :class="darkMode ? 'text-red-400 hover:text-red-300 hover:bg-red-400/10' : 'text-red-600 hover:text-red-700 hover:bg-red-50'">
+                    🗑 Deletar
                   </button>
                 </div>
               </td>
@@ -176,6 +182,29 @@
       </div>
     </div>
 
+    <!-- Image Upload Modal -->
+    <div v-if="showImageUploadModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto p-4">
+      <div class="my-8 bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 max-w-md"
+           :class="darkMode ? 'bg-slate-900' : 'bg-white'">
+        <h3 class="text-lg font-bold mb-4" :class="darkMode ? 'text-white' : 'text-slate-900'">
+          Upload de Imagem - {{ uploadingProductTitle }}
+        </h3>
+        <div class="mb-6">
+          <AdminImageUploader
+            :dark-mode="darkMode"
+            @uploaded="handleImageUploaded"
+          />
+        </div>
+        <div class="flex gap-4">
+          <button @click="closeImageUploadModal"
+                  class="flex-1 px-4 py-2 rounded-lg font-bold transition-colors"
+                  :class="darkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-200 text-slate-900 hover:bg-slate-300'">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 max-w-sm mx-4"
@@ -208,6 +237,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useAdminStore } from '../stores/admin';
+import AdminImageUploader from './AdminImageUploader.vue';
 
 const props = defineProps({
   darkMode: {
@@ -232,32 +262,45 @@ const deleteProductId = ref(null);
 const deleteProductName = ref('');
 const isDeleting = ref(false);
 
+const showImageUploadModal = ref(false);
+const uploadingProductId = ref(null);
+const uploadingProductTitle = ref('');
+
 const filteredProducts = computed(() => {
-  // Ensure products is always an array
+  // Ensure products is always an array and valid
   const products = Array.isArray(adminStore.products) ? adminStore.products : [];
 
-  return products.filter(product => {
-    if (searchQuery.value) {
-      const query = searchQuery.value.toLowerCase();
-      if (!product.title.toLowerCase().includes(query) &&
-          !product.shortDescription?.toLowerCase().includes(query)) {
+  return products
+    .filter(product => {
+      // Validate product object
+      if (!product || typeof product !== 'object') return false;
+
+      // Search filter
+      if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase();
+        const title = (product.title || '').toLowerCase();
+        const desc = (product.shortDescription || '').toLowerCase();
+        if (!title.includes(query) && !desc.includes(query)) {
+          return false;
+        }
+      }
+
+      // Category filter
+      if (categoryFilter.value && product.category !== categoryFilter.value) {
         return false;
       }
-    }
 
-    if (categoryFilter.value && product.category !== categoryFilter.value) {
-      return false;
-    }
+      // Status filter
+      if (statusFilter.value === 'available' && !product.available) {
+        return false;
+      }
+      if (statusFilter.value === 'unavailable' && product.available) {
+        return false;
+      }
 
-    if (statusFilter.value === 'available' && !product.available) {
-      return false;
-    }
-    if (statusFilter.value === 'unavailable' && product.available) {
-      return false;
-    }
-
-    return true;
-  });
+      return true;
+    })
+    .sort((a, b) => (b.id || 0) - (a.id || 0));
 });
 
 const totalPages = computed(() => {
@@ -322,6 +365,38 @@ const confirmDeleteAction = async () => {
     alert('Erro ao deletar produto: ' + err.message);
   } finally {
     isDeleting.value = false;
+  }
+};
+
+const openImageUploadModal = (productId, productTitle) => {
+  uploadingProductId.value = productId;
+  uploadingProductTitle.value = productTitle;
+  showImageUploadModal.value = true;
+};
+
+const closeImageUploadModal = () => {
+  showImageUploadModal.value = false;
+  uploadingProductId.value = null;
+  uploadingProductTitle.value = '';
+};
+
+const handleImageUploaded = async (imageUrl) => {
+  try {
+    if (!uploadingProductId.value) return;
+
+    // Update product with image URL
+    const product = adminStore.getProductById(uploadingProductId.value);
+    if (product) {
+      await adminStore.updateProduct(uploadingProductId.value, {
+        ...product,
+        imageUrl: imageUrl,
+      });
+      closeImageUploadModal();
+      alert('Imagem uploadada com sucesso!');
+    }
+  } catch (err) {
+    console.error('Error updating product image:', err);
+    alert('Erro ao salvar imagem: ' + err.message);
   }
 };
 </script>
