@@ -233,7 +233,10 @@ const deleteProductName = ref('');
 const isDeleting = ref(false);
 
 const filteredProducts = computed(() => {
-  return adminStore.products.filter(product => {
+  // Ensure products is always an array
+  const products = Array.isArray(adminStore.products) ? adminStore.products : [];
+
+  return products.filter(product => {
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase();
       if (!product.title.toLowerCase().includes(query) &&
