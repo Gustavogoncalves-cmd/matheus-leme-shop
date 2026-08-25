@@ -2,10 +2,10 @@
 
 **Status:** ✅ MVP COMPLETO | 🚀 Pronto para Deploy
 
-**Data:** 2026-08-21  
-**Commits:** 9 (desde init até MVP)  
-**Linhas de Código:** 10,151+  
-**Agents Paralelos:** 7 completados
+**Data:** 2026-08-25  
+**Commits:** 12 (desde init até produção)  
+**Linhas de Código:** 17,000+  
+**Testes:** 207 passando (140 backend + 67 frontend)
 
 ---
 
@@ -69,19 +69,24 @@
 ### MVP (Completo ✅)
 - [x] Catálogo com filtros
 - [x] Carrinho com persistência
-- [x] Add to cart
+- [x] Add to cart com animação
 - [x] Autenticação JWT
-- [x] Rotas protegidas
+- [x] Rotas protegidas (auth guard)
 - [x] Dark mode
 - [x] Responsive design
-- [x] Database com migrações
+- [x] Database com migrações idempotentes
 - [x] Docker/compose
-- [x] Testes automatizados
+- [x] Testes automatizados (207 testes)
+- [x] Pagamento via MercadoPago (sandbox)
+- [x] Páginas Meus Pedidos e Meu Perfil
+- [x] Admin panel (CRUD produtos, upload imagens)
+- [x] Download de produtos digitais
+- [x] Integração Stripe (opcional, configurada)
 
 ### Em Progresso 🚧
-- [ ] Checkout Stripe
-- [ ] Admin panel (CRUD de produtos)
-- [ ] Order tracking
+- [ ] Deploy para produção (Railway + Vercel)
+- [ ] Configurar MercadoPago webhook em produção
+- [ ] Sentry error tracking
 
 ### TODO 📋
 - [ ] Email notifications
@@ -194,17 +199,18 @@ docker-compose up
 
 ## 📝 Next Steps
 
-### Immediate (1-2 days)
-1. Setup production database
-2. Configure Stripe API keys
-3. Implement checkout flow
-4. Deploy to staging
+### Immediate (Para Deploy)
+1. Criar conta Railway (ou Render)
+2. Provisionar PostgreSQL
+3. Configurar Railway + GitHub auto-deploy
+4. Adicionar variáveis de ambiente (JWT_SECRET, MercadoPago, etc.)
+5. Aplicar migrations no banco de produção
 
 ### Short-term (1-2 weeks)
-1. Admin panel CRUD
-2. Order management system
-3. Email notifications
-4. Performance optimization
+1. Configurar Sentry error tracking
+2. Configurar Monit (BetterUptime)
+3. Configurar domínio customizado (opcional)
+4. Testar checkout MercadoPago em homologação
 
 ### Long-term (1 month+)
 1. User reviews & ratings
