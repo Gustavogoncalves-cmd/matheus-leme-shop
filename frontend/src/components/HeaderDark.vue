@@ -1,12 +1,21 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { ShoppingBag, Menu, X } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import { ShoppingBag, Menu, X, User, LogIn, LogOut, Settings, ChevronDown, Package } from 'lucide-vue-next'
 import { useCartStore } from '../stores/cart'
+import { useAuthStore } from '../stores/auth'
 
+const router = useRouter()
 const cartStore = useCartStore()
+const authStore = useAuthStore()
+
 const cartCount = computed(() => cartStore.items?.length || 0)
+const isAuthenticated = computed(() => authStore.isAuthenticated)
+const isAdmin = computed(() => authStore.isAdmin)
+const userName = computed(() => authStore.user?.name || authStore.user?.email || 'Usuário')
 
 const mobileOpen = ref(false)
+const userMenuOpen = ref(false)
 
 const navLinks = [
   { label: 'Catálogo', href: '#menu' },
@@ -16,6 +25,12 @@ const navLinks = [
 ]
 
 const closeMobile = () => { mobileOpen.value = false }
+
+const handleLogout = async () => {
+  userMenuOpen.value = false
+  await authStore.logout()
+  router.push('/')
+}
 </script>
 
 <template>
@@ -54,6 +69,67 @@ const closeMobile = () => { mobileOpen.value = false }
           </span>
         </router-link>
 
+        <!-- Auth: Logged In -->
+        <div v-if="isAuthenticated" class="relative hidden md:block">
+          <button
+            @click="userMenuOpen = !userMenuOpen"
+            class="flex items-center gap-1.5 p-2 rounded-lg text-slate-300 hover:text-neon-lime hover:bg-slate-800/50 transition-colors"
+          >
+            <User class="w-5 h-5" />
+            <span class="text-sm font-medium max-w-[100px] truncate">{{ userName }}</span>
+            <ChevronDown class="w-4 h-4" :class="userMenuOpen ? 'rotate-180' : ''" />
+          </button>
+
+          <!-- Dropdown -->
+          <div v-if="userMenuOpen" class="absolute right-0 mt-2 w-52 bg-slate-900 border border-neon-line rounded-lg shadow-xl z-50 overflow-hidden">
+            <div class="py-1">
+              <router-link
+                to="/orders"
+                class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:text-neon-lime hover:bg-slate-800 transition-colors"
+                @click="userMenuOpen = false"
+              >
+                <Package class="w-4 h-4" />
+                Meus Pedidos
+              </router-link>
+              <router-link
+                to="/perfil"
+                class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:text-neon-lime hover:bg-slate-800 transition-colors"
+                @click="userMenuOpen = false"
+              >
+                <User class="w-4 h-4" />
+                Meu Perfil
+              </router-link>
+              <router-link
+                v-if="isAdmin"
+                to="/admin"
+                class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:text-neon-lime hover:bg-slate-800 transition-colors"
+                @click="userMenuOpen = false"
+              >
+                <Settings class="w-4 h-4" />
+                Painel Admin
+              </router-link>
+              <div class="border-t border-neon-line my-1"></div>
+              <button
+                @click="handleLogout"
+                class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors text-left"
+              >
+                <LogOut class="w-4 h-4" />
+                Sair
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auth: Logged Out -->
+        <router-link
+          v-else
+          to="/login"
+          class="hidden md:flex items-center gap-1.5 p-2 rounded-lg text-slate-300 hover:text-neon-lime hover:bg-slate-800/50 transition-colors"
+        >
+          <LogIn class="w-5 h-5" />
+          <span class="text-sm font-medium">Entrar</span>
+        </router-link>
+
         <button class="md:hidden p-2 text-slate-300 hover:text-neon-lime transition-colors"
                 @click="mobileOpen = !mobileOpen">
           <component :is="mobileOpen ? X : Menu" class="w-6 h-6" />
@@ -71,10 +147,50 @@ const closeMobile = () => { mobileOpen.value = false }
       leave-to-class="opacity-0 -translate-y-2">
       <nav v-if="mobileOpen" class="md:hidden border-t border-neon-line bg-neon-bg px-4 pb-4 pt-2 flex flex-col gap-1">
         <a v-for="link in navLinks" :key="link.href" :href="link.href"
-           class="py-3 text-sm font-bold uppercase tracking-wide text-slate-300 hover:text-neon-lime transition-colors border-b border-neon-line/50 last:border-0"
+           class="py-3 text-sm font-bold uppercase tracking-wide text-slate-300 hover:text-neon-lime transition-colors border-b border-neon-line/50"
            @click="closeMobile">
           {{ link.label }}
         </a>
+
+        <!-- Mobile auth section -->
+        <div class="border-t border-neon-line/50 mt-2 pt-2">
+          <template v-if="isAuthenticated">
+            <p class="py-2 text-xs font-bold uppercase tracking-wide text-slate-500">Conta</p>
+            <router-link
+              to="/orders"
+              class="flex items-center gap-2 py-3 text-sm font-medium text-slate-300 hover:text-neon-lime transition-colors"
+              @click="closeMobile"
+            >
+              <Package class="w-4 h-4" />
+              Meus Pedidos
+            </router-link>
+            <router-link
+              v-if="isAdmin"
+              to="/admin"
+              class="flex items-center gap-2 py-3 text-sm font-medium text-slate-300 hover:text-neon-lime transition-colors"
+              @click="closeMobile"
+            >
+              <Settings class="w-4 h-4" />
+              Painel Admin
+            </router-link>
+            <button
+              @click="() => { closeMobile(); handleLogout(); }"
+              class="flex items-center gap-2 py-3 text-sm font-medium text-red-400 hover:text-red-300 transition-colors w-full text-left"
+            >
+              <LogOut class="w-4 h-4" />
+              Sair
+            </button>
+          </template>
+          <router-link
+            v-else
+            to="/login"
+            class="flex items-center gap-2 py-3 text-sm font-medium text-slate-300 hover:text-neon-lime transition-colors"
+            @click="closeMobile"
+          >
+            <LogIn class="w-4 h-4" />
+            Entrar
+          </router-link>
+        </div>
       </nav>
     </transition>
   </header>

@@ -215,20 +215,15 @@ describe('Order Model', () => {
 
       expect(result.id).toBe(1);
       expect(result.items).toHaveLength(1);
-      expect(typeof result.shipping_address).toBe('object');
     });
 
-    it('should parse shipping address from JSON string', async () => {
-      const shippingAddress = { street: 'Main St', city: 'São Paulo' };
+    it('returns digital orders without shipping data', async () => {
       const mockOrder = {
         id: 1,
         user_id: 1,
         total_price: 100,
-        shipping_address: JSON.stringify(shippingAddress),
-        status: 'pending',
-        payment_method: 'pending',
-        mercadopago_preference_id: null,
-        mercadopago_payment_id: null,
+        status: 'pending_payment',
+        payment_method: 'mercadopago',
         created_at: '2024-08-21T00:00:00Z',
       };
 
@@ -238,7 +233,7 @@ describe('Order Model', () => {
 
       const result = await Order.findById(1);
 
-      expect(result.shipping_address).toEqual(shippingAddress);
+      expect(result.shipping_address).toBeUndefined();
     });
 
     it('should return null when order not found', async () => {

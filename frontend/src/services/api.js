@@ -1,6 +1,6 @@
 import { useAuthStore } from '../stores/auth';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
 
 /**
  * Pull the most useful message out of an error response.
@@ -113,6 +113,17 @@ class ApiClient {
     return this.request('PUT', endpoint, data);
   }
 
+  async download(endpoint) {
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
+      headers: this.getHeaders(),
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw new Error(await extractErrorMessage(response));
+    }
+    return response.blob();
+  }
+
   /**
    * Multipart upload. Deliberately does not reuse request(): the browser must
    * set Content-Type itself so the multipart boundary is generated correctly,
@@ -184,7 +195,7 @@ export const cartApi = {
   },
 
   addItem(productId, quantity = 1) {
-    return apiClient.post('/api/cart/add', { productId, quantity });
+    return apiClient.post('/api/cart/add', { product_id: productId, quantity });
   },
 
   removeItem(itemId) {
@@ -218,7 +229,11 @@ export const ordersApi = {
   },
 
   updateStatus(id, status) {
-    return apiClient.patch(`/api/orders/${id}`, { status });
+    return apiClient.patch(`/api/orders/${id}/status`, { status });
+  },
+
+  downloadItem(orderId, itemId) {
+    return apiClient.download(`/api/orders/${orderId}/items/${itemId}/download`);
   },
 };
 

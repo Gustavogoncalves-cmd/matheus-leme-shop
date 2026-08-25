@@ -37,17 +37,12 @@ jobs:
         env:
           NODE_ENV: test
 
-      - name: Run Backend Linter
-        run: cd backend && npm run lint --if-present
-        continue-on-error: true
-
       # Frontend Tests
       - name: Install Frontend Dependencies
         run: cd frontend && npm ci
 
       - name: Run Frontend Tests
-        run: cd frontend && npm test
-        continue-on-error: true
+        run: cd frontend && npm test -- --run
 
       - name: Build Frontend
         run: cd frontend && npm run build

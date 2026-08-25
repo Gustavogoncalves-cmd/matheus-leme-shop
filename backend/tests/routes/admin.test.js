@@ -380,7 +380,7 @@ describe('Admin Routes', () => {
         id: 1,
         user_id: 1,
         total_price: 299.99,
-        status: 'processing',
+        status: 'paid',
         payment_method: 'pending',
         created_at: '2024-08-21T00:00:00Z',
       };
@@ -391,11 +391,11 @@ describe('Admin Routes', () => {
         .mockResolvedValueOnce({ rows: [] }); // items
 
       const res = await request(app)
-        .get('/api/admin/orders?status=processing')
+        .get('/api/admin/orders?status=paid')
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.data[0].status).toBe('processing');
+      expect(res.body.data[0].status).toBe('paid');
     });
 
     it('should reject customer from listing orders', async () => {
@@ -414,7 +414,7 @@ describe('Admin Routes', () => {
         id: 1,
         user_id: 1,
         total_price: 299.99,
-        status: 'processing',
+        status: 'paid',
       };
 
       Order.updateStatus.mockResolvedValue(updatedOrder);
@@ -422,11 +422,11 @@ describe('Admin Routes', () => {
       const res = await request(app)
         .patch('/api/admin/orders/1/status')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ status: 'processing' });
+        .send({ status: 'paid' });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.status).toBe('processing');
+      expect(res.body.data.status).toBe('paid');
     });
 
     it('should reject invalid status', async () => {
@@ -446,7 +446,7 @@ describe('Admin Routes', () => {
       const res = await request(app)
         .patch('/api/admin/orders/999/status')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ status: 'processing' });
+        .send({ status: 'paid' });
 
       expect(res.status).toBe(404);
       expect(res.body.success).toBe(false);
@@ -456,7 +456,7 @@ describe('Admin Routes', () => {
       const res = await request(app)
         .patch('/api/admin/orders/1/status')
         .set('Authorization', `Bearer ${customerToken}`)
-        .send({ status: 'processing' });
+        .send({ status: 'paid' });
 
       expect(res.status).toBe(403);
       expect(res.body.success).toBe(false);
@@ -540,7 +540,7 @@ describe('Admin Routes', () => {
       const res = await request(app)
         .patch('/api/admin/orders/invalid-id/status')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ status: 'processing' });
+        .send({ status: 'paid' });
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);

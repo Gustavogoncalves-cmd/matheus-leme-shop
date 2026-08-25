@@ -23,6 +23,6 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 -- Create indexes for common queries
-CREATE INDEX idx_products_category ON products(category);
-CREATE INDEX idx_products_available ON products(available);
-CREATE INDEX idx_products_featured ON products(featured);
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+CREATE INDEX IF NOT EXISTS idx_products_available ON products(available);
+CREATE INDEX IF NOT EXISTS idx_products_featured ON products(featured);

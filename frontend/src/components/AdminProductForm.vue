@@ -118,6 +118,19 @@
               </select>
             </div>
 
+            <div>
+              <label class="block text-sm font-medium mb-2" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
+                Arquivo digital (caminho em private/downloads)
+              </label>
+              <input
+                v-model="form.downloadPath"
+                type="text"
+                placeholder="produto.zip"
+                class="w-full px-4 py-2 border rounded-lg"
+                :class="darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-300'"
+              />
+            </div>
+
             <div class="flex items-center gap-4">
               <label class="flex items-center">
                 <input
@@ -194,6 +207,7 @@ const form = reactive({
   price: props.product?.price || 0,
   discount: props.product?.discount || 0,
   category: props.product?.category || '',
+  downloadPath: props.product?.downloadPath || '',
   featured: props.product?.featured || false,
   available: props.product?.available || true,
 });

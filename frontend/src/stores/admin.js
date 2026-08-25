@@ -43,6 +43,7 @@ export const useAdminStore = defineStore('admin', () => {
       images: row.images || [],
       features: row.features || [],
       previews: row.previews || [],
+      downloadPath: row.download_path || row.downloadPath || '',
     };
   }
 
@@ -55,7 +56,7 @@ export const useAdminStore = defineStore('admin', () => {
 
     try {
       const query = new URLSearchParams(filters).toString();
-      const response = await apiClient.get(`/api/products?${query}`);
+      const response = await apiClient.get(`/api/admin/products?${query}`);
       // API returns { success, data: [...] }
       products.value = Array.isArray(response.data)
         ? response.data.map(mapProductRow)
@@ -77,7 +78,7 @@ export const useAdminStore = defineStore('admin', () => {
     productsError.value = null;
 
     try {
-      const response = await apiClient.post('/api/products', data);
+      const response = await apiClient.post('/api/admin/products', data);
       products.value.push(response.data);
       return response.data;
     } catch (err) {
@@ -97,7 +98,7 @@ export const useAdminStore = defineStore('admin', () => {
     productsError.value = null;
 
     try {
-      const response = await apiClient.patch(`/api/products/${id}`, data);
+      const response = await apiClient.patch(`/api/admin/products/${id}`, data);
       const index = products.value.findIndex(p => p.id === id);
       if (index > -1) {
         products.value[index] = response.data;
@@ -120,7 +121,7 @@ export const useAdminStore = defineStore('admin', () => {
     productsError.value = null;
 
     try {
-      await apiClient.delete(`/api/products/${id}`);
+      await apiClient.delete(`/api/admin/products/${id}`);
       products.value = products.value.filter(p => p.id !== id);
     } catch (err) {
       productsError.value = err.message;
@@ -140,8 +141,7 @@ export const useAdminStore = defineStore('admin', () => {
 
     try {
       const query = new URLSearchParams(filters).toString();
-      const response = await apiClient.get(`/api/orders?${query}`);
-      // API returns { success, data: [...], pagination: {...} }
+      const response = await apiClient.get(`/api/admin/orders?${query}`);
       orders.value = response.data || [];
     } catch (err) {
       ordersError.value = err.message;
@@ -179,12 +179,12 @@ export const useAdminStore = defineStore('admin', () => {
     ordersError.value = null;
 
     try {
-      const response = await apiClient.patch(`/api/orders/${orderId}`, {
+      const response = await apiClient.patch(`/api/admin/orders/${orderId}/status`, {
         status: newStatus,
       });
-      const index = orders.value.findIndex(o => o.id === orderId);
+      const index = orders.value.findIndex(o => o.id === Number(orderId));
       if (index > -1) {
-        orders.value[index] = response.data;
+        orders.value[index] = { ...orders.value[index], ...response.data };
       }
       return response.data;
     } catch (err) {
@@ -204,7 +204,7 @@ export const useAdminStore = defineStore('admin', () => {
     dashboardError.value = null;
 
     try {
-      const response = await apiClient.get('/api/admin/metrics');
+      const response = await apiClient.get('/api/admin/dashboard');
       dashboardMetrics.value = response.data;
       return response.data;
     } catch (err) {

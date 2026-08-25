@@ -58,23 +58,30 @@ const validateWebhookSignature = (xSignature, requestBody, requestId) => {
     if (key === 'v1') receivedHash = value;
   }
 
-  if (!receivedTs || !receivedHash) {
+  if (!/^\d+$/.test(receivedTs || '') || !/^[a-f0-9]{64}$/i.test(receivedHash || '')) {
     return false;
   }
 
-  // Create the data string to sign
-  // MercadoPago format: ts + . + request body JSON
-  const bodyString = typeof requestBody === 'string'
-    ? requestBody
-    : JSON.stringify(requestBody);
+  const timestamp = Number(receivedTs);
+  if (Math.abs(Date.now() - timestamp) > 5 * 60 * 1000) {
+    return false;
+  }
 
-  const data = `${receivedTs}.${bodyString}`;
+  const dataId = requestBody?.data?.id;
+  if (!dataId || !requestId) {
+    return false;
+  }
+
+  // Mercado Pago signs this exact manifest for Webhooks notifications.
+  const manifest = `id:${String(dataId).toLowerCase()};request-id:${requestId};ts:${receivedTs};`;
   const hash = crypto
     .createHmac('sha256', webhookSecret)
-    .update(data)
+    .update(manifest)
     .digest('hex');
 
-  return hash === receivedHash;
+  const expected = Buffer.from(hash, 'hex');
+  const received = Buffer.from(receivedHash, 'hex');
+  return expected.length === received.length && crypto.timingSafeEqual(expected, received);
 };
 
 /**

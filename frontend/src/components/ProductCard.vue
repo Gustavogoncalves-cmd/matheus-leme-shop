@@ -162,9 +162,10 @@ const whatsappLink = computed(() => {
 const addToCart = () => {
   cartStore.addItem({
     id: props.product.id,
-    name: props.product.title,
+    title: props.product.title,
     price: props.product.price,
-    quantity: 1,
+    discount: props.product.discount,
+    thumbnail: props.product.thumbnail,
   });
 };
 </script>

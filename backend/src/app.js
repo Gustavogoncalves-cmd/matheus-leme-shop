@@ -93,11 +93,7 @@ app.get('/api/health', (req, res) => {
  *                   example: Backend is running
  */
 
-// Import auth limiter here to apply to auth routes
-const { authLimiter } = require('./middleware/security');
-
 // Routes
-// TEMPORARILY DISABLED for testing: authLimiter
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/cart', require('./routes/cart'));

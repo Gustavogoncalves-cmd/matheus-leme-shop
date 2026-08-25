@@ -38,7 +38,11 @@ class MigrationRunner {
    */
   async connect() {
     try {
-      this.pool = new Pool({
+      this.pool = new Pool(process.env.DATABASE_URL ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+        statement_timeout: 30000,
+      } : {
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '5432', 10),
         database: process.env.DB_NAME,
@@ -105,6 +109,7 @@ class MigrationRunner {
    */
   async runMigration(filename) {
     const filepath = path.join(this.migrationsDir, filename);
+    const client = await this.pool.connect();
 
     try {
       if (!fs.existsSync(filepath)) {
@@ -112,14 +117,38 @@ class MigrationRunner {
         return false;
       }
 
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS schema_migrations (
+          filename VARCHAR(255) PRIMARY KEY,
+          executed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      const applied = await client.query(
+        'SELECT 1 FROM schema_migrations WHERE filename = $1',
+        [filename]
+      );
+      if (applied.rows.length) {
+        this.log('INFO', `Already applied: ${filename}`);
+        return true;
+      }
+
       this.log('PROGRESS', `Running migration: ${filename}`);
       const sql = fs.readFileSync(filepath, 'utf8');
-      await this.pool.query(sql);
+      await client.query('BEGIN');
+      await client.query(sql);
+      await client.query(
+        'INSERT INTO schema_migrations (filename) VALUES ($1)',
+        [filename]
+      );
+      await client.query('COMMIT');
       this.log('SUCCESS', `Completed: ${filename}`);
       return true;
     } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
       this.log('ERROR', `Failed (${filename}): ${error.message}`);
       return false;
+    } finally {
+      client.release();
     }
   }
 

@@ -93,14 +93,15 @@ class Product {
       images,
       features,
       previews,
+      downloadPath,
     } = productData;
 
     const query = `
       INSERT INTO products (
         title, header_title, category, type, description,
         short_description, price, discount, price_original, featured,
-        available, theme_color, thumbnail, images, features, previews
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        available, theme_color, thumbnail, images, features, previews, download_path
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       RETURNING *
     `;
 
@@ -121,6 +122,7 @@ class Product {
       JSON.stringify(images || []),
       JSON.stringify(features || []),
       JSON.stringify(previews || []),
+      downloadPath || null,
     ];
 
     try {
@@ -151,6 +153,7 @@ class Product {
       'images',
       'features',
       'previews',
+      'download_path',
     ];
 
     const setClauses = [];

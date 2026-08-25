@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const router = express.Router();
 const Order = require('../models/Order');
 const pool = require('../config/database');
@@ -58,40 +59,68 @@ const { authenticate, authorize } = require('../middleware/auth');
  */
 router.post('/', authenticate, async (req, res) => {
   try {
-    const { items, shippingAddress, totalPrice } = req.body;
+    const { items } = req.body;
 
-    // Validation
-    if (!items || items.length === 0) {
+    if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
         success: false,
         error: 'Order must contain at least one item',
       });
     }
 
-    if (!shippingAddress) {
+    const quantities = new Map();
+    for (const item of items) {
+      const productId = Number(item.product_id ?? item.id);
+      const quantity = Number(item.quantity);
+      if (!Number.isInteger(productId) || productId <= 0 || !Number.isInteger(quantity) || quantity <= 0 || quantity > 99) {
+        return res.status(400).json({
+          success: false,
+          error: 'Each item must have a valid product_id and quantity between 1 and 99',
+        });
+      }
+      const combinedQuantity = (quantities.get(productId) || 0) + quantity;
+      if (combinedQuantity > 99) {
+        return res.status(400).json({
+          success: false,
+          error: 'Combined quantity for a product cannot exceed 99',
+        });
+      }
+      quantities.set(productId, combinedQuantity);
+    }
+
+    const productIds = [...quantities.keys()];
+    const productsResult = await pool.query(
+      `SELECT id, price, discount, available
+       FROM products
+       WHERE id = ANY($1::int[])`,
+      [productIds]
+    );
+
+    if (productsResult.rows.length !== productIds.length || productsResult.rows.some(product => !product.available)) {
       return res.status(400).json({
         success: false,
-        error: 'Shipping address is required',
+        error: 'One or more products are unavailable',
       });
     }
 
-    if (!totalPrice || totalPrice < 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Valid total price is required',
-      });
-    }
-
-    // Create order
-    const order = await Order.create(req.user.id, {
-      items,
-      shippingAddress,
-      totalPrice,
-      status: 'pending',
+    const pricedItems = productsResult.rows.map(product => {
+      const price = Number(product.price) * (1 - Number(product.discount || 0) / 100);
+      return {
+        product_id: product.id,
+        quantity: quantities.get(product.id),
+        price: Number(price.toFixed(2)),
+      };
     });
+    const totalPrice = Number(pricedItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    ).toFixed(2));
 
-    // Clear user's cart after order creation
-    await pool.query('DELETE FROM cart WHERE user_id = $1', [req.user.id]);
+    const order = await Order.create(req.user.id, {
+      items: pricedItems,
+      totalPrice,
+      status: 'pending_payment',
+    });
 
     res.status(201).json({
       success: true,
@@ -160,17 +189,23 @@ router.post('/', authenticate, async (req, res) => {
 router.get('/', authenticate, async (req, res) => {
   try {
     const { limit = 20, offset = 0 } = req.query;
-    const parsedLimit = parseInt(limit, 10) || 20;
-    const parsedOffset = parseInt(offset, 10) || 0;
+    const parsedLimit = Number(limit);
+    const parsedOffset = Number(offset);
 
-    if (parsedLimit < 1 || parsedLimit > 100) {
+    if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 100) {
       return res.status(400).json({
         success: false,
         error: 'Limit must be between 1 and 100',
       });
     }
 
-    // Get orders
+    if (!Number.isInteger(parsedOffset) || parsedOffset < 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Offset must be a non-negative integer',
+      });
+    }
+
     const orders = await Order.findByUserId(req.user.id, parsedLimit, parsedOffset);
 
     // Get total count
@@ -236,6 +271,50 @@ router.get('/', authenticate, async (req, res) => {
  *       500:
  *         description: Server error
  */
+router.get('/:id/items/:itemId/download', authenticate, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT o.user_id, o.status, p.download_path, p.title
+       FROM orders o
+       JOIN order_items oi ON oi.order_id = o.id
+       JOIN products p ON p.id = oi.product_id
+       WHERE o.id = $1 AND oi.id = $2`,
+      [req.params.id, req.params.itemId]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ success: false, error: 'Download not found' });
+    }
+
+    const item = result.rows[0];
+    if (item.user_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Unauthorized to download this item' });
+    }
+    if (item.status !== 'paid') {
+      return res.status(403).json({ success: false, error: 'Payment must be approved before download' });
+    }
+    if (!item.download_path) {
+      return res.status(404).json({ success: false, error: 'Product file is not configured' });
+    }
+
+    const downloadsRoot = path.resolve(__dirname, '../../private/downloads');
+    const filePath = path.resolve(downloadsRoot, item.download_path);
+    if (!filePath.startsWith(`${downloadsRoot}${path.sep}`)) {
+      return res.status(400).json({ success: false, error: 'Invalid product file' });
+    }
+
+    const extension = path.extname(filePath);
+    const safeTitle = item.title.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-|-$/g, '');
+    return res.download(filePath, `${safeTitle || 'produto'}${extension}`);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return res.status(404).json({ success: false, error: 'Product file not found' });
+    }
+    console.error('Error downloading order item:', error);
+    return res.status(500).json({ success: false, error: 'Failed to download product' });
+  }
+});
+
 router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
@@ -329,7 +408,7 @@ router.patch('/:id/status', authenticate, authorize('admin'), async (req, res) =
     const { status } = req.body;
 
     // Validation
-    const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+    const validStatuses = ['pending_payment', 'paid', 'payment_failed', 'refunded', 'cancelled'];
     if (!status || !validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,

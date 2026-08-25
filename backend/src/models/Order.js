@@ -10,21 +10,20 @@ class Order {
     try {
       await client.query('BEGIN');
 
-      const { items, totalPrice, shippingAddress, status = 'pending' } = orderData;
+      const { items, totalPrice, status = 'pending' } = orderData;
 
       // Insert order
       const orderQuery = `
-        INSERT INTO orders (user_id, total_price, shipping_address, status, payment_method)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, user_id, total_price, shipping_address, status, payment_method, created_at
+        INSERT INTO orders (user_id, total_price, status, payment_method)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, user_id, total_price, status, payment_method, created_at
       `;
 
       const orderResult = await client.query(orderQuery, [
         userId,
         totalPrice,
-        JSON.stringify(shippingAddress),
         status,
-        'pending',
+        'mercadopago',
       ]);
 
       const orderId = orderResult.rows[0].id;
@@ -71,7 +70,8 @@ class Order {
   static async findById(orderId) {
     try {
       const orderQuery = `
-        SELECT id, user_id, total_price, shipping_address, status, payment_method, mercadopago_preference_id, mercadopago_payment_id, created_at
+        SELECT id, user_id, total_price, status, payment_method,
+               mercadopago_preference_id, mercadopago_payment_id, created_at, updated_at
         FROM orders
         WHERE id = $1
       `;
@@ -83,18 +83,18 @@ class Order {
 
       // Get order items
       const itemsQuery = `
-        SELECT id, product_id, quantity, price
-        FROM order_items
-        WHERE order_id = $1
+        SELECT oi.id, oi.product_id, oi.quantity, oi.price,
+               p.title AS product_title, p.thumbnail
+        FROM order_items oi
+        JOIN products p ON p.id = oi.product_id
+        WHERE oi.order_id = $1
+        ORDER BY oi.id
       `;
 
       const itemsResult = await pool.query(itemsQuery, [orderId]);
 
       return {
         ...order,
-        shipping_address: typeof order.shipping_address === 'string'
-          ? JSON.parse(order.shipping_address)
-          : order.shipping_address,
         items: itemsResult.rows,
       };
     } catch (error) {

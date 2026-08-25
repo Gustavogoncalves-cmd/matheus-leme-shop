@@ -5,4 +5,11 @@
 
 ALTER TABLE products ADD COLUMN IF NOT EXISTS stock INTEGER DEFAULT 0;
 
-ALTER TABLE products ADD CONSTRAINT products_title_unique UNIQUE (title);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'products_title_unique'
+  ) THEN
+    ALTER TABLE products ADD CONSTRAINT products_title_unique UNIQUE (title);
+  END IF;
+END $$;

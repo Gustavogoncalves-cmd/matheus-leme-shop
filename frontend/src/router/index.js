@@ -6,6 +6,8 @@ import AdminPage from '../pages/AdminPage.vue'
 import CheckoutPage from '../pages/CheckoutPage.vue'
 import PaymentSuccess from '../pages/PaymentSuccess.vue'
 import PaymentCancel from '../pages/PaymentCancel.vue'
+import OrdersPage from '../pages/OrdersPage.vue'
+import ProfilePage from '../pages/ProfilePage.vue'
 import NotFoundPage from '../pages/NotFoundPage.vue'
 import { useAuthStore } from '../stores/auth'
 
@@ -26,7 +28,7 @@ const routes = [
     path: '/checkout',
     name: 'checkout',
     component: CheckoutPage,
-    meta: { title: 'Checkout' }
+    meta: { title: 'Checkout', requiresAuth: true }
   },
   {
     path: '/payment-success',
@@ -45,6 +47,18 @@ const routes = [
     name: 'login',
     component: LoginPage,
     meta: { title: 'Login' }
+  },
+  {
+    path: '/orders',
+    name: 'orders',
+    component: OrdersPage,
+    meta: { title: 'Meus Pedidos', requiresAuth: true }
+  },
+  {
+    path: '/perfil',
+    name: 'perfil',
+    component: ProfilePage,
+    meta: { title: 'Meu Perfil', requiresAuth: true }
   },
   {
     path: '/admin',
@@ -71,11 +85,10 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-// Admin guard. This is a UX gate only - it hides the panel from non-admins.
-// The real enforcement lives on the API: every admin endpoint re-checks the
-// JWT with authenticate + authorize('admin') server-side.
+// Auth guard for protected routes (requiresAuth).
+// Redirects to login with redirect param, then back after login.
 router.beforeEach(async (to) => {
-  if (!to.meta.requiresAdmin) return true
+  if (!to.meta.requiresAuth && !to.meta.requiresAdmin) return true
 
   const authStore = useAuthStore()
 
@@ -83,10 +96,14 @@ router.beforeEach(async (to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
 
-  // Confirm the stored token is still valid and the role is current before
-  // rendering the panel; a stale localStorage entry must not open the door.
+  // Verify token is still valid before rendering protected pages
   const valid = await authStore.verifySession()
-  if (!valid || !authStore.isAdmin) {
+  if (!valid) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  // Admin-only check
+  if (to.meta.requiresAdmin && !authStore.isAdmin) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
 

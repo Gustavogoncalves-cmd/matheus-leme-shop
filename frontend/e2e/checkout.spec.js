@@ -1,166 +1,92 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Checkout Flow', () => {
-  test.beforeEach(async ({ page }) => {
-    // Clear cart from localStorage
-    await page.evaluate(() => {
-      localStorage.removeItem('cart');
-      localStorage.removeItem('cart_items');
+const cart = [{
+  id: 1,
+  title: 'Streampack Neon',
+  price: 100,
+  discount: 10,
+  quantity: 1,
+}];
+
+async function seedCart(page) {
+  await page.addInitScript((items) => {
+    localStorage.setItem('matheus_leme_cart', JSON.stringify(items));
+  }, cart);
+}
+
+async function seedAuthenticatedUser(page) {
+  await page.addInitScript(() => {
+    localStorage.setItem('matheus_leme_token', 'e2e-token');
+    localStorage.setItem('matheus_leme_user', JSON.stringify({
+      id: 7,
+      name: 'Cliente E2E',
+      email: 'cliente@example.com',
+      role: 'customer',
+    }));
+  });
+
+  await page.route('**/api/auth/profile', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      success: true,
+      data: { id: 7, name: 'Cliente E2E', email: 'cliente@example.com', role: 'customer' },
+    }),
+  }));
+}
+
+test.describe('Checkout digital', () => {
+  test('exige login e preserva o retorno ao checkout', async ({ page }) => {
+    await seedCart(page);
+    await page.goto('/checkout');
+
+    await expect(page).toHaveURL(/\/login\?redirect=\/checkout$/);
+    await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+  });
+
+  test('mostra o resumo digital para usuário autenticado', async ({ page }) => {
+    await seedCart(page);
+    await seedAuthenticatedUser(page);
+    await page.goto('/checkout');
+
+    await expect(page).toHaveURL(/\/checkout$/);
+    await expect(page.getByRole('heading', { name: 'Finalizar compra' })).toBeVisible();
+    await expect(page.getByText('Streampack Neon')).toBeVisible();
+    await expect(page.getByText('R$ 90,00')).toHaveCount(2);
+    await expect(page.getByRole('button', { name: 'Pagar com Mercado Pago' })).toBeEnabled();
+    await expect(page.getByText(/download ficará disponível em Meus Pedidos/i)).toBeVisible();
+  });
+
+  test('cria pedido com IDs e solicita preferência ao Mercado Pago', async ({ page }) => {
+    await seedCart(page);
+    await seedAuthenticatedUser(page);
+
+    let orderPayload;
+    let preferencePayload;
+    await page.route('**/api/orders', async route => {
+      if (route.request().method() !== 'POST') return route.continue();
+      orderPayload = route.request().postDataJSON();
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: { id: 42, total_price: 90, status: 'pending_payment' } }),
+      });
     });
-    await page.goto('/');
-  });
+    await page.route('**/api/payments/create-preference', async route => {
+      preferencePayload = route.request().postDataJSON();
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: { preference_id: 'pref-42' } }),
+      });
+    });
 
-  test('should navigate to checkout', async ({ page }) => {
-    // Add product to cart
-    const addToCartButton = page.locator('[data-testid="add-to-cart"]').first();
-    await expect(addToCartButton).toBeVisible({ timeout: 10000 });
-    await addToCartButton.click();
+    await page.goto('/checkout');
+    await page.getByRole('button', { name: 'Pagar com Mercado Pago' }).click();
 
-    // Navigate to cart
-    const cartLink = page.locator('a[href="/cart"]');
-    await cartLink.click();
-
-    // Click checkout button
-    const checkoutButton = page.locator('[data-testid="checkout-button"]');
-    await checkoutButton.click();
-
-    // Verify checkout page loaded
-    await expect(page).toHaveURL(/.*\/checkout/);
-  });
-
-  test('should display checkout form', async ({ page }) => {
-    // Add product to cart
-    const addToCartButton = page.locator('[data-testid="add-to-cart"]').first();
-    await expect(addToCartButton).toBeVisible({ timeout: 10000 });
-    await addToCartButton.click();
-
-    // Navigate to checkout
-    const cartLink = page.locator('a[href="/cart"]');
-    await cartLink.click();
-
-    const checkoutButton = page.locator('[data-testid="checkout-button"]');
-    await checkoutButton.click();
-
-    // Verify form fields
-    await expect(page.locator('input[name="nome"]')).toBeVisible();
-    await expect(page.locator('input[name="email"]')).toBeVisible();
-    await expect(page.locator('input[name="telefone"]')).toBeVisible();
-    await expect(page.locator('input[name="endereco"]')).toBeVisible();
-    await expect(page.locator('input[name="cidade"]')).toBeVisible();
-    await expect(page.locator('input[name="estado"]')).toBeVisible();
-    await expect(page.locator('input[name="cep"]')).toBeVisible();
-  });
-
-  test('should fill checkout form', async ({ page }) => {
-    // Add product to cart
-    const addToCartButton = page.locator('[data-testid="add-to-cart"]').first();
-    await expect(addToCartButton).toBeVisible({ timeout: 10000 });
-    await addToCartButton.click();
-
-    // Navigate to checkout
-    const cartLink = page.locator('a[href="/cart"]');
-    await cartLink.click();
-
-    const checkoutButton = page.locator('[data-testid="checkout-button"]');
-    await checkoutButton.click();
-
-    // Fill form
-    await page.fill('input[name="nome"]', 'João Silva');
-    await page.fill('input[name="email"]', 'joao@example.com');
-    await page.fill('input[name="telefone"]', '11987654321');
-    await page.fill('input[name="endereco"]', 'Rua das Flores, 123');
-    await page.fill('input[name="cidade"]', 'São Paulo');
-    await page.fill('input[name="estado"]', 'SP');
-    await page.fill('input[name="cep"]', '01234-567');
-
-    // Verify values
-    await expect(page.locator('input[name="nome"]')).toHaveValue('João Silva');
-    await expect(page.locator('input[name="email"]')).toHaveValue('joao@example.com');
-  });
-
-  test('should redirect to MercadoPago on payment click', async ({ page }) => {
-    // Add product to cart
-    const addToCartButton = page.locator('[data-testid="add-to-cart"]').first();
-    await expect(addToCartButton).toBeVisible({ timeout: 10000 });
-    await addToCartButton.click();
-
-    // Navigate to checkout
-    const cartLink = page.locator('a[href="/cart"]');
-    await cartLink.click();
-
-    const checkoutButton = page.locator('[data-testid="checkout-button"]');
-    await checkoutButton.click();
-
-    // Fill form
-    await page.fill('input[name="nome"]', 'João Silva');
-    await page.fill('input[name="email"]', 'joao@example.com');
-    await page.fill('input[name="telefone"]', '11987654321');
-    await page.fill('input[name="endereco"]', 'Rua das Flores, 123');
-    await page.fill('input[name="cidade"]', 'São Paulo');
-    await page.fill('input[name="estado"]', 'SP');
-    await page.fill('input[name="cep"]', '01234-567');
-
-    // Listen for navigation
-    const [popup] = await Promise.all([
-      page.waitForEvent('popup'),
-      page.click('[data-testid="pay-button"]'),
-    ]);
-
-    // Verify popup/redirect to MercadoPago
-    await popup.waitForLoadState();
-    expect(popup.url()).toContain('mercadopago');
-  });
-
-  test('should show success page after payment', async ({ page }) => {
-    // Add product to cart
-    const addToCartButton = page.locator('[data-testid="add-to-cart"]').first();
-    await expect(addToCartButton).toBeVisible({ timeout: 10000 });
-    await addToCartButton.click();
-
-    // Navigate to checkout
-    const cartLink = page.locator('a[href="/cart"]');
-    await cartLink.click();
-
-    const checkoutButton = page.locator('[data-testid="checkout-button"]');
-    await checkoutButton.click();
-
-    // Fill form
-    await page.fill('input[name="nome"]', 'João Silva');
-    await page.fill('input[name="email"]', 'joao@example.com');
-    await page.fill('input[name="telefone"]', '11987654321');
-    await page.fill('input[name="endereco"]', 'Rua das Flores, 123');
-    await page.fill('input[name="cidade"]', 'São Paulo');
-    await page.fill('input[name="estado"]', 'SP');
-    await page.fill('input[name="cep"]', '01234-567');
-
-    // Simulate successful payment by navigating to success page
-    // (In real scenario, MercadoPago would redirect back)
-    await page.goto('/success');
-
-    // Verify success page elements
-    const successMessage = page.locator('[data-testid="success-message"]');
-    await expect(successMessage).toBeVisible();
-  });
-
-  test('should validate required fields', async ({ page }) => {
-    // Add product to cart
-    const addToCartButton = page.locator('[data-testid="add-to-cart"]').first();
-    await expect(addToCartButton).toBeVisible({ timeout: 10000 });
-    await addToCartButton.click();
-
-    // Navigate to checkout
-    const cartLink = page.locator('a[href="/cart"]');
-    await cartLink.click();
-
-    const checkoutButton = page.locator('[data-testid="checkout-button"]');
-    await checkoutButton.click();
-
-    // Try to submit without filling form
-    const payButton = page.locator('[data-testid="pay-button"]');
-    await payButton.click();
-
-    // Verify validation errors appear
-    const errorMessage = page.locator('[data-testid="error-message"]');
-    await expect(errorMessage).toBeVisible();
+    await expect(page.getByText('Falha ao obter o link do Mercado Pago')).toBeVisible();
+    expect(orderPayload).toEqual({ items: [{ product_id: 1, quantity: 1 }] });
+    expect(preferencePayload).toEqual({ orderId: 42 });
+    expect(await page.evaluate(() => localStorage.getItem('lastOrderId'))).toBe('42');
   });
 });

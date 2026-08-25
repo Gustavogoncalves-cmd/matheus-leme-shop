@@ -204,6 +204,7 @@ router.post('/products', async (req, res) => {
       images,
       features,
       previews,
+      downloadPath,
     } = req.body;
 
     // Validation
@@ -238,6 +239,7 @@ router.post('/products', async (req, res) => {
       images,
       features,
       previews,
+      downloadPath,
     });
 
     res.status(201).json({
@@ -323,7 +325,13 @@ router.patch('/products/:id', async (req, res) => {
       req.body.price = price;
     }
 
-    const product = await Product.update(id, req.body);
+    const updates = { ...req.body };
+    if (updates.downloadPath !== undefined) {
+      updates.download_path = updates.downloadPath || null;
+      delete updates.downloadPath;
+    }
+
+    const product = await Product.update(id, updates);
 
     if (!product) {
       return res.status(404).json({
@@ -468,10 +476,14 @@ router.get('/orders', async (req, res) => {
       offset = 0,
     } = req.query;
 
-    const pageLimit = Math.min(parseInt(limit), 100);
-    const pageOffset = Math.max(0, parseInt(offset));
+    const pageLimit = Math.min(Math.max(Number.parseInt(limit, 10) || 20, 1), 100);
+    const pageOffset = Math.max(Number.parseInt(offset, 10) || 0, 0);
 
-    let query = 'SELECT id, user_id, total_price, status, payment_method, created_at FROM orders WHERE 1=1';
+    let query = `SELECT o.id, o.user_id, o.total_price, o.status, o.payment_method,
+                        o.created_at, u.name AS customer_name, u.email AS customer_email
+                 FROM orders o
+                 JOIN users u ON u.id = o.user_id
+                 WHERE 1=1`;
     const values = [];
     let paramCount = 1;
 
@@ -493,22 +505,13 @@ router.get('/orders', async (req, res) => {
       paramCount++;
     }
 
-    // Get total count
-    const countResult = await pool.query(
-      `SELECT COUNT(*) as total FROM orders WHERE 1=1 ${
-        status ? `AND status = $1` : ''
-      } ${
-        startDate ? `AND created_at >= $${status ? 2 : 1}` : ''
-      } ${
-        endDate ? `AND created_at <= $${startDate ? (status ? 3 : 2) : (status ? 2 : 1)}` : ''
-      }`,
-      values
-    );
-
+    const countQuery = query
+      .replace(/SELECT[\s\S]+?FROM orders o/, 'SELECT COUNT(*) AS total FROM orders o')
+      .replace(/\s+JOIN users u ON u\.id = o\.user_id/, '');
+    const countResult = await pool.query(countQuery, values);
     const total = parseInt(countResult.rows[0].total, 10);
 
-    // Get orders
-    query += ' ORDER BY created_at DESC LIMIT $' + paramCount + ' OFFSET $' + (paramCount + 1);
+    query += ' ORDER BY o.created_at DESC LIMIT $' + paramCount + ' OFFSET $' + (paramCount + 1);
     values.push(pageLimit, pageOffset);
 
     const ordersResult = await pool.query(query, values);
@@ -599,7 +602,7 @@ router.patch('/orders/:id/status', async (req, res) => {
       });
     }
 
-    const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+    const validStatuses = ['pending_payment', 'paid', 'payment_failed', 'refunded', 'cancelled'];
     if (!status || !validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -692,8 +695,8 @@ router.get('/dashboard', async (req, res) => {
   try {
     // Total revenue
     const revenueResult = await pool.query(
-      'SELECT SUM(total)::float as total_revenue FROM orders WHERE status != $1',
-      ['cancelled']
+      'SELECT SUM(total_price)::float as total_revenue FROM orders WHERE status = $1',
+      ['paid']
     );
     const totalRevenue = revenueResult.rows[0].total_revenue || 0;
 
@@ -712,7 +715,7 @@ router.get('/dashboard', async (req, res) => {
 
     // Recent orders (last 10)
     const recentOrdersResult = await pool.query(
-      `SELECT id, user_id, total, status, created_at
+      `SELECT id, user_id, total_price, status, created_at
        FROM orders
        ORDER BY created_at DESC
        LIMIT 10`
@@ -723,10 +726,11 @@ router.get('/dashboard', async (req, res) => {
     const topProductsResult = await pool.query(
       `SELECT
         p.id, p.title, p.price, p.thumbnail,
-        SUM(oi.quantity)::int as total_sold,
-        SUM(oi.quantity * oi.price_at_purchase)::float as total_revenue
+        SUM(CASE WHEN o.status = 'paid' THEN oi.quantity ELSE 0 END)::int as total_sold,
+        SUM(CASE WHEN o.status = 'paid' THEN oi.quantity * oi.price ELSE 0 END)::float as total_revenue
       FROM products p
       LEFT JOIN order_items oi ON p.id = oi.product_id
+      LEFT JOIN orders o ON o.id = oi.order_id
       GROUP BY p.id, p.title, p.price, p.thumbnail
       ORDER BY total_sold DESC NULLS LAST
       LIMIT 5`
@@ -741,12 +745,12 @@ router.get('/dashboard', async (req, res) => {
       `SELECT
         DATE_TRUNC('month', created_at)::date as month,
         COUNT(*)::int as order_count,
-        SUM(total)::float as revenue
+        SUM(total_price)::float as revenue
       FROM orders
-      WHERE created_at >= CURRENT_DATE - INTERVAL '12 months' AND status != $1
+      WHERE created_at >= CURRENT_DATE - INTERVAL '12 months' AND status = $1
       GROUP BY DATE_TRUNC('month', created_at)
       ORDER BY month ASC`,
-      ['cancelled']
+      ['paid']
     );
     const chartData = {
       monthly_sales: chartDataResult.rows,

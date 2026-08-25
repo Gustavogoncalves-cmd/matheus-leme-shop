@@ -89,17 +89,13 @@ const handleCheckoutSubmit = async (checkoutData) => {
       return;
     }
 
-    // Initiate payment
-    const paymentData = await paymentService.initiatePayment(checkoutData);
+    const payment = await paymentService.initiatePayment(checkoutData);
 
-    // Store order ID for later use
-    localStorage.setItem('lastOrderId', paymentData.orderId);
-
-    // Redirect to MercadoPago
-    if (paymentData.init_point) {
-      window.location.href = paymentData.init_point;
+    localStorage.setItem('lastOrderId', String(payment.orderId));
+    if (payment.init_point) {
+      window.location.href = payment.init_point;
     } else {
-      error.value = 'Falha ao obter link de pagamento';
+      error.value = 'Falha ao obter o link do Mercado Pago';
     }
   } catch (err) {
     console.error('Checkout error:', err);

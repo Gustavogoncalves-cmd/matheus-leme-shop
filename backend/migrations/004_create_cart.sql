@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS cart (
 );
 
 -- Create index
-CREATE INDEX idx_cart_user_id ON cart(user_id);
+CREATE INDEX IF NOT EXISTS idx_cart_user_id ON cart(user_id);

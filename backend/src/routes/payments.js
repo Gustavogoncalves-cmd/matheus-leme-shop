@@ -3,400 +3,200 @@ const router = express.Router();
 const pool = require('../config/database');
 const Order = require('../models/Order');
 const { authenticate } = require('../middleware/auth');
-const { getClient, validateWebhookSignature, getPaymentStatus, createPreference } = require('../config/payment');
+const {
+  validateWebhookSignature,
+  getPaymentStatus,
+  createPreference,
+} = require('../config/payment');
 
-/**
- * @swagger
- * /api/payments/create-preference:
- *   post:
- *     summary: Create MercadoPago payment preference
- *     description: Create a payment preference for MercadoPago checkout
- *     tags:
- *       - Payments
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - orderId
- *               - cartItems
- *               - customerInfo
- *             properties:
- *               orderId:
- *                 type: integer
- *               cartItems:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     product_id:
- *                       type: integer
- *                     name:
- *                       type: string
- *                     description:
- *                       type: string
- *                     image_url:
- *                       type: string
- *                     quantity:
- *                       type: integer
- *                     price:
- *                       type: number
- *               customerInfo:
- *                 type: object
- *                 properties:
- *                   firstName:
- *                     type: string
- *                   email:
- *                     type: string
- *                   phone:
- *                     type: string
- *                   street:
- *                     type: string
- *                   streetNumber:
- *                     type: string
- *                   zipCode:
- *                     type: string
- *     responses:
- *       201:
- *         description: Payment preference created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     preference_id:
- *                       type: string
- *                     init_point:
- *                       type: string
- *       400:
- *         description: Missing required fields
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Cannot create preference for other user's order
- *       404:
- *         description: Order not found
- *       500:
- *         description: Server error
- */
+const PAYMENT_STATUS_TO_ORDER_STATUS = {
+  approved: 'paid',
+  pending: 'pending_payment',
+  in_process: 'pending_payment',
+  rejected: 'payment_failed',
+  cancelled: 'payment_failed',
+  refunded: 'refunded',
+  charged_back: 'refunded',
+};
+
+const getOrderId = (externalReference) => {
+  const match = /^ORDER_(\d+)$/.exec(String(externalReference || ''));
+  return match ? Number(match[1]) : null;
+};
+
 router.post('/create-preference', authenticate, async (req, res) => {
   try {
-    const { orderId, cartItems, customerInfo } = req.body;
-
-    // Validation
-    if (!orderId) {
-      return res.status(400).json({
-        success: false,
-        error: 'orderId is required',
-      });
+    const orderId = Number(req.body.orderId);
+    if (!Number.isInteger(orderId) || orderId <= 0) {
+      return res.status(400).json({ success: false, error: 'A valid orderId is required' });
     }
 
-    if (!cartItems || cartItems.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'cartItems is required',
-      });
-    }
-
-    if (!customerInfo) {
-      return res.status(400).json({
-        success: false,
-        error: 'customerInfo is required',
-      });
-    }
-
-    // Verify order exists and belongs to user
     const order = await Order.findById(orderId);
     if (!order) {
-      return res.status(404).json({
-        success: false,
-        error: 'Order not found',
-      });
+      return res.status(404).json({ success: false, error: 'Order not found' });
     }
-
     if (order.user_id !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        error: 'Unauthorized to create preference for this order',
-      });
+      return res.status(403).json({ success: false, error: 'Unauthorized to create preference for this order' });
+    }
+    if (order.status !== 'pending_payment') {
+      return res.status(409).json({ success: false, error: 'Order is not awaiting payment' });
+    }
+    if (!order.items?.length) {
+      return res.status(400).json({ success: false, error: 'Order has no items' });
     }
 
-    // Build preference items
-    const preferenceItems = cartItems.map(item => ({
-      id: item.product_id,
-      title: item.name,
-      description: item.description,
-      picture_url: item.image_url,
-      category_id: 'products',
-      quantity: item.quantity,
-      unit_price: parseFloat(item.price),
-    }));
-
-    // Create preference object
     const preference = {
-      items: preferenceItems,
-      payer: {
-        name: customerInfo.firstName || customerInfo.name || 'Customer',
-        email: customerInfo.email || req.user.email,
-        phone: {
-          area_code: customerInfo.areaCode || '11',
-          number: customerInfo.phone || '',
-        },
-        address: {
-          street_name: customerInfo.street || '',
-          street_number: customerInfo.streetNumber || '',
-          zip_code: customerInfo.zipCode || '',
-        },
-      },
+      items: order.items.map(item => ({
+        id: String(item.product_id),
+        title: item.product_title || `Produto ${item.product_id}`,
+        picture_url: item.thumbnail || undefined,
+        category_id: 'digital_goods',
+        quantity: Number(item.quantity),
+        unit_price: Number(item.price),
+        currency_id: 'BRL',
+      })),
+      payer: { email: req.user.email },
       back_urls: {
-        success: `${process.env.FRONTEND_URL}/checkout/success`,
-        failure: `${process.env.FRONTEND_URL}/checkout/failure`,
-        pending: `${process.env.FRONTEND_URL}/checkout/pending`,
+        success: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment-success`,
+        failure: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment-cancel`,
+        pending: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/orders`,
       },
       auto_return: 'approved',
-      external_reference: `ORDER_${orderId}`,
-      notification_url: `${process.env.WEBHOOK_URL}`,
-      metadata: {
-        orderId: orderId,
-        userId: req.user.id,
-      },
+      external_reference: `ORDER_${order.id}`,
+      metadata: { order_id: order.id, user_id: req.user.id },
     };
 
-    // Create preference in MercadoPago
-    const createdPreference = await createPreference(preference);
+    if (process.env.WEBHOOK_URL) {
+      preference.notification_url = process.env.WEBHOOK_URL;
+    }
 
-    // Store preference ID in database
+    const createdPreference = await createPreference(preference);
     await pool.query(
-      `UPDATE orders SET mercadopago_preference_id = $1 WHERE id = $2`,
-      [createdPreference.id, orderId]
+      `UPDATE orders
+       SET mercadopago_preference_id = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2`,
+      [createdPreference.id, order.id]
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: {
         preference_id: createdPreference.id,
         init_point: createdPreference.init_point,
+        sandbox_init_point: createdPreference.sandbox_init_point,
       },
     });
   } catch (error) {
     console.error('Error creating payment preference:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create payment preference',
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, error: 'Failed to create payment preference' });
   }
 });
 
-/**
- * @swagger
- * /api/payments/webhook:
- *   post:
- *     summary: MercadoPago webhook handler
- *     description: Handle payment notifications from MercadoPago (no auth required)
- *     tags:
- *       - Payments
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               type:
- *                 type: string
- *                 enum: [payment, plan, subscription, invoice]
- *               data:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *     responses:
- *       200:
- *         description: Webhook processed
- *       401:
- *         description: Invalid webhook signature
- */
 router.post('/webhook', async (req, res) => {
+  const xSignature = req.headers['x-signature'];
+  const xRequestId = req.headers['x-request-id'];
+
+  if (!validateWebhookSignature(xSignature, req.body, xRequestId)) {
+    return res.status(401).json({ success: false, error: 'Invalid webhook signature' });
+  }
+
+  if (req.body?.type !== 'payment') {
+    return res.status(200).json({ success: true, ignored: true });
+  }
+
   try {
-    const xSignature = req.headers['x-signature'];
-    const xRequestId = req.headers['x-request-id'];
-    const requestBody = JSON.stringify(req.body);
-
-    // Validate webhook signature
-    if (!validateWebhookSignature(xSignature, req.body, xRequestId)) {
-      console.warn('Invalid webhook signature received');
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid webhook signature',
-      });
-    }
-
-    const { type, data } = req.body;
-
-    // Only process payment notifications
-    if (type !== 'payment') {
-      return res.status(200).json({ success: true });
-    }
-
-    const paymentId = data.id;
-
-    // Get payment details from MercadoPago
+    const paymentId = String(req.body?.data?.id || '');
     const payment = await getPaymentStatus(paymentId);
+    const orderId = getOrderId(payment.external_reference);
+    const nextStatus = PAYMENT_STATUS_TO_ORDER_STATUS[payment.status];
 
-    // Extract order ID from external reference
-    const externalReference = payment.external_reference;
-    const orderId = externalReference ? externalReference.replace('ORDER_', '') : null;
-
-    if (!orderId) {
-      console.warn(`No order ID found in external reference: ${externalReference}`);
-      return res.status(200).json({ success: true });
+    if (!orderId || !nextStatus) {
+      return res.status(200).json({ success: true, ignored: true });
     }
 
-    // Get order
     const order = await Order.findById(orderId);
     if (!order) {
-      console.warn(`Order not found: ${orderId}`);
-      return res.status(200).json({ success: true });
+      return res.status(200).json({ success: true, ignored: true });
     }
 
-    // Handle payment status
-    switch (payment.status) {
-      case 'approved':
-        // Payment approved - update order status
-        await Order.updateStatus(orderId, 'paid');
-        await pool.query(
-          `UPDATE orders SET mercadopago_payment_id = $1, payment_method = $2 WHERE id = $3`,
-          [paymentId, 'mercadopago', orderId]
-        );
-
-        // Clear user's cart
-        await pool.query(
-          'DELETE FROM cart WHERE user_id = $1',
-          [order.user_id]
-        );
-
-        console.log(`Payment approved for order ${orderId}, payment ID: ${paymentId}`);
-        break;
-
-      case 'pending':
-        await Order.updateStatus(orderId, 'pending_payment');
-        console.log(`Payment pending for order ${orderId}, payment ID: ${paymentId}`);
-        break;
-
-      case 'rejected':
-      case 'cancelled':
-      case 'refunded':
-      case 'charged_back':
-        await Order.updateStatus(orderId, 'payment_failed');
-        console.log(`Payment failed for order ${orderId}, payment ID: ${paymentId}, status: ${payment.status}`);
-        break;
-
-      default:
-        console.log(`Unknown payment status for order ${orderId}: ${payment.status}`);
+    const paymentAmount = Number(payment.transaction_amount);
+    const orderAmount = Number(order.total_price);
+    const currency = payment.currency_id || 'BRL';
+    if (!Number.isFinite(paymentAmount) || Math.abs(paymentAmount - orderAmount) > 0.009 || currency !== 'BRL') {
+      console.warn(`Payment ${paymentId} does not match order ${orderId}`);
+      return res.status(422).json({ success: false, error: 'Payment does not match order' });
     }
 
-    res.status(200).json({ success: true });
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const eventResult = await client.query(
+        `INSERT INTO payment_webhook_events (payment_id, status, order_id)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (payment_id, status) DO NOTHING
+         RETURNING payment_id`,
+        [paymentId, payment.status, orderId]
+      );
+
+      if (!eventResult.rows.length) {
+        await client.query('COMMIT');
+        return res.status(200).json({ success: true, duplicate: true });
+      }
+
+      await client.query(
+        `UPDATE orders
+         SET status = CASE
+               WHEN status = 'paid' AND $1 IN ('pending_payment', 'payment_failed') THEN status
+               ELSE $1
+             END,
+             mercadopago_payment_id = $2,
+             payment_method = 'mercadopago',
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $3`,
+        [nextStatus, paymentId, orderId]
+      );
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+
+    return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error processing webhook:', error);
-    // Return 200 to prevent MercadoPago retry
-    res.status(200).json({
-      success: false,
-      error: 'Webhook processing error',
-      message: error.message,
-    });
+    console.error('Error processing Mercado Pago webhook:', error);
+    return res.status(500).json({ success: false, error: 'Webhook processing error' });
   }
 });
 
-/**
- * @swagger
- * /api/payments/status/{payment_id}:
- *   get:
- *     summary: Get payment status
- *     description: Get the status of a specific payment from MercadoPago
- *     tags:
- *       - Payments
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: payment_id
- *         required: true
- *         schema:
- *           type: integer
- *         description: MercadoPago payment ID
- *     responses:
- *       200:
- *         description: Payment status details
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                     status:
- *                       type: string
- *                     status_detail:
- *                       type: string
- *                     transaction_amount:
- *                       type: number
- *       400:
- *         description: Missing payment_id
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Server error
- */
 router.get('/status/:payment_id', authenticate, async (req, res) => {
   try {
-    const { payment_id } = req.params;
+    const payment = await getPaymentStatus(req.params.payment_id);
+    const orderId = getOrderId(payment.external_reference);
+    const order = orderId ? await Order.findById(orderId) : null;
 
-    if (!payment_id) {
-      return res.status(400).json({
-        success: false,
-        error: 'payment_id is required',
-      });
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found for payment' });
+    }
+    if (order.user_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Unauthorized to view this payment' });
     }
 
-    const payment = await getPaymentStatus(payment_id);
-
-    res.json({
+    return res.json({
       success: true,
       data: {
         id: payment.id,
+        order_id: order.id,
         status: payment.status,
         status_detail: payment.status_detail,
-        external_reference: payment.external_reference,
         transaction_amount: payment.transaction_amount,
-        installments: payment.installments,
-        payment_method_id: payment.payment_method_id,
-        created_at: payment.date_created,
+        currency_id: payment.currency_id,
       },
     });
   } catch (error) {
     console.error('Error fetching payment status:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch payment status',
-      message: error.message,
-    });
+    return res.status(502).json({ success: false, error: 'Failed to fetch payment status' });
   }
 });
 

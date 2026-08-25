@@ -59,6 +59,8 @@ frontend/playwright-report/
 # Local databases / neural state (agent tooling)
 *.db
 **/.claude-flow/neural/
+agentdb.rvf
+agentdb.rvf.lock
 
 # Agent tooling telemetry. Runtime receipts, not source: they churn on every
 # run and land in whatever directory a command happened to run from. The few

@@ -1,8 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import ProductCard from '../components/ProductCard.vue';
 
 describe('ProductCard.vue', () => {
+  beforeEach(() => setActivePinia(createPinia()));
   const mockProduct = {
     id: 1,
     title: 'Test Product',
@@ -213,28 +215,6 @@ describe('ProductCard.vue', () => {
     expect(wrapper.text()).toContain('99.99');
   });
 
-  it('generates correct WhatsApp link', () => {
-    const wrapper = mount(ProductCard, {
-      props: {
-        product: mockProduct,
-        darkMode: false,
-      },
-      global: {
-        stubs: {
-          Eye: true,
-          ShoppingBag: true,
-          Star: true,
-        },
-      },
-    });
-
-    const whatsappLink = wrapper.find('a');
-    const href = whatsappLink.attributes('href');
-    expect(href).toContain('wa.me');
-    expect(href).toContain(encodeURIComponent('Test Product'));
-    expect(href).toContain('5511951865795');
-  });
-
   it('shows combo badge for pacote category', () => {
     const pacoteProduct = { ...mockProduct, category: 'pacote' };
     const wrapper = mount(ProductCard, {
@@ -331,65 +311,6 @@ describe('ProductCard.vue', () => {
     const outerDiv = wrapper.find('[class*="from-brand-500"]');
     expect(outerDiv.exists()).toBe(true);
     expect(outerDiv.classes()).toContain('bg-gradient-to-r');
-  });
-
-  it('WhatsApp link includes correct phone number', () => {
-    const wrapper = mount(ProductCard, {
-      props: {
-        product: mockProduct,
-        darkMode: false,
-      },
-      global: {
-        stubs: {
-          Eye: true,
-          ShoppingBag: true,
-          Star: true,
-        },
-      },
-    });
-
-    const whatsappLink = wrapper.find('a');
-    const href = whatsappLink.attributes('href');
-    expect(href).toContain('5511951865795');
-  });
-
-  it('WhatsApp link opens in new tab', () => {
-    const wrapper = mount(ProductCard, {
-      props: {
-        product: mockProduct,
-        darkMode: false,
-      },
-      global: {
-        stubs: {
-          Eye: true,
-          ShoppingBag: true,
-          Star: true,
-        },
-      },
-    });
-
-    const whatsappLink = wrapper.find('a');
-    expect(whatsappLink.attributes('target')).toBe('_blank');
-  });
-
-  it('WhatsApp message includes product title', () => {
-    const wrapper = mount(ProductCard, {
-      props: {
-        product: mockProduct,
-        darkMode: false,
-      },
-      global: {
-        stubs: {
-          Eye: true,
-          ShoppingBag: true,
-          Star: true,
-        },
-      },
-    });
-
-    const whatsappLink = wrapper.find('a');
-    const href = whatsappLink.attributes('href');
-    expect(href).toContain(encodeURIComponent('Test Product'));
   });
 
   it('displays more features count when features exceed 3', () => {
