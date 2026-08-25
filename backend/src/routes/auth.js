@@ -304,4 +304,112 @@ router.get('/profile', authenticate, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/google:
+ *   post:
+ *     summary: Login or register with Google
+ *     description: Authenticate user via Google ID token. Creates account if new.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - credential
+ *             properties:
+ *               credential:
+ *                 type: string
+ *                 description: Google ID token from Google Identity Services
+ *     responses:
+ *       200:
+ *         description: Authentication successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *                     token:
+ *                       type: string
+ *       401:
+ *         description: Invalid Google token
+ *       500:
+ *         description: Server error
+ */
+router.post('/google', async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        error: 'Google credential is required',
+      });
+    }
+
+    const { OAuth2Client } = require('google-auth-library');
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    if (!payload || !payload.sub || !payload.email) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid Google token',
+      });
+    }
+
+    // Check if user exists by google_id
+    let user = await User.findByGoogleId(payload.sub);
+
+    if (!user) {
+      // Create new user from Google data
+      user = await User.createFromGoogle({
+        googleId: payload.sub,
+        email: payload.email,
+        name: payload.name || payload.email.split('@')[0],
+      });
+    }
+
+    const token = generateToken(user);
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
+        token,
+      },
+    });
+  } catch (error) {
+    console.error('Google auth error:', error);
+    if (error.message?.includes('Token')) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid Google token',
+      });
+    }
+    res.status(500).json({
+      success: false,
+      error: 'Google authentication failed',
+    });
+  }
+});
+
 module.exports = router;

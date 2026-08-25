@@ -5,7 +5,7 @@
       <p :class="darkMode ? 'text-slate-400' : 'text-slate-500'" class="mb-4">
         Seu carrinho está vazio
       </p>
-      <router-link to="/" class="inline-block px-6 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors">
+      <router-link to="/" class="inline-block px-6 py-3 bg-neon-lime text-black font-bold rounded-full transition-all hover:brightness-110">
         Voltar ao Catálogo
       </router-link>
     </div>
@@ -31,7 +31,7 @@
               {{ item.title }}
             </h3>
             <p class="text-sm" :class="darkMode ? 'text-slate-400' : 'text-slate-500'">
-              R$ {{ item.price.toFixed(2) }}
+              R$ {{ (item.price || 0).toFixed(2) }}
             </p>
             <div v-if="item.discount" class="text-xs text-emerald-500 font-semibold">
               -{{ item.discount }}% desconto
@@ -81,12 +81,12 @@
 
         <div class="flex gap-3">
           <router-link to="/"
-                       class="flex-1 px-4 py-3 rounded-lg text-center font-semibold transition-colors"
-                       :class="darkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'">
+                       class="flex-1 px-4 py-3 rounded-lg text-center font-semibold transition-colors bg-neon-card border border-neon-line text-white hover:bg-neon-card2"
+                       :class="darkMode ? 'bg-neon-card text-white hover:bg-neon-card2 border-neon-line' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'">
             Continuar Comprando
           </router-link>
-          <button @click="checkout"
-                  class="flex-1 px-4 py-3 rounded-lg text-center font-semibold text-white transition-colors bg-brand-600 hover:bg-brand-700">
+          <button @click="checkout" :disabled="cartStore.items.length === 0"
+            class="w-full px-4 py-3 bg-neon-lime text-black rounded-full font-bold transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed">
             Ir para Checkout
           </button>
         </div>
@@ -114,7 +114,8 @@ const emit = defineEmits(['checkout']);
 const cartStore = useCartStore();
 
 const itemTotal = (item) => {
-  const discountedPrice = item.price * (1 - (item.discount || 0) / 100);
+  const p = item.price || 0;
+  const discountedPrice = p * (1 - (item.discount || 0) / 100);
   return discountedPrice * item.quantity;
 };
 

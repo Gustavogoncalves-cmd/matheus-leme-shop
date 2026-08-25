@@ -71,3 +71,4 @@ frontend/src/**/.claude-flow/
 # Uploaded admin panel images (user content, not source)
 backend/public/uploads/*
 !backend/public/uploads/.gitkeep
+.vercel

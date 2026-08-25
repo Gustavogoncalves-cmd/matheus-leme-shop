@@ -249,6 +249,10 @@ export const authApi = {
     return apiClient.post('/api/auth/register', { name, email, password });
   },
 
+  googleLogin(credential) {
+    return apiClient.post('/api/auth/google', { credential });
+  },
+
   logout() {
     return apiClient.post('/api/auth/logout', {});
   },

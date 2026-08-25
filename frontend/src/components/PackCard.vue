@@ -3,6 +3,7 @@ import { motion } from 'motion-v'
 import { Eye, ShoppingBag } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useCartStore } from '../stores/cart'
+import { useCartFly } from '../composables/useCartFly'
 import { scaleGlow } from '../composables/useAnimations'
 
 const props = defineProps({
@@ -12,6 +13,7 @@ const props = defineProps({
 const emit = defineEmits(['view-details'])
 
 const cartStore = useCartStore()
+const { flyToCart } = useCartFly()
 
 const categoryLabel = computed(() => {
   return props.pack.category === 'pacote' ? 'Combo Completo' : 'Peça Individual'
@@ -21,8 +23,9 @@ const glowClass = computed(() => {
   return props.pack.category === 'pacote' ? 'hover:shadow-neon-magenta' : 'hover:shadow-neon-cyan'
 })
 
-function handleAdd() {
+async function handleAdd(event) {
   cartStore.addItem(props.pack)
+  await flyToCart(event)
 }
 </script>
 
@@ -98,7 +101,7 @@ function handleAdd() {
             <Eye class="w-4 h-4" />
             Ver Detalhes
           </button>
-          <button @click="handleAdd" :disabled="!pack.available"
+          <button @click="handleAdd($event)" :disabled="!pack.available"
                   class="p-2.5 rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed bg-neon-card2 text-white hover:bg-neon-lime hover:text-black">
             <ShoppingBag class="w-4 h-4" />
           </button>

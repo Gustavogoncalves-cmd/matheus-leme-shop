@@ -1,5 +1,5 @@
 <template>
-  <main class="min-h-screen bg-slate-950 px-4 py-16 text-white">
+  <main class="min-h-screen bg-neon-bg px-4 py-16 text-white">
     <section class="mx-auto max-w-2xl rounded-xl border border-green-500/30 bg-slate-900 p-8 text-center">
       <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-500 text-3xl">✓</div>
       <h1 class="text-3xl font-bold">Pagamento recebido</h1>

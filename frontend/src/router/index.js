@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ShopPage from '../pages/ShopPage.vue'
 import CartPage from '../pages/CartPage.vue'
 import LoginPage from '../pages/LoginPage.vue'
+import RegisterPage from '../pages/RegisterPage.vue'
 import AdminPage from '../pages/AdminPage.vue'
 import CheckoutPage from '../pages/CheckoutPage.vue'
 import PaymentSuccess from '../pages/PaymentSuccess.vue'
@@ -47,6 +48,12 @@ const routes = [
     name: 'login',
     component: LoginPage,
     meta: { title: 'Login' }
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterPage,
+    meta: { title: 'Criar Conta' }
   },
   {
     path: '/orders',

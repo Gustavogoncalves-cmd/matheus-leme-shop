@@ -1,10 +1,10 @@
 <template>
-  <main class="min-h-screen bg-white dark:bg-slate-950">
-    <div class="container mx-auto px-4 py-8">
-      <h1 class="text-4xl font-bold text-slate-900 dark:text-white mb-8">
+  <main class="min-h-screen bg-neon-bg">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 class="text-4xl font-black text-white font-display uppercase tracking-tight mb-8">
         Carrinho de Compras
       </h1>
-      <Cart />
+      <Cart :dark-mode="true" />
     </div>
   </main>
 </template>

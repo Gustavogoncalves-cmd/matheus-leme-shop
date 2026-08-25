@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-slate-950 dark:to-slate-900 py-8 px-4 flex items-center justify-center">
+  <div class="min-h-screen bg-neon-bg py-8 px-4 flex items-center justify-center">
     <div class="w-full max-w-2xl">
       <!-- Cancel Card -->
-      <div class="bg-white dark:bg-slate-900 rounded-lg shadow-2xl overflow-hidden">
+      <div class="bg-white dark:bg-neon-card rounded-2xl border dark:border-neon-line shadow-2xl overflow-hidden">
         <!-- Header -->
         <div class="bg-gradient-to-r from-orange-500 to-red-500 dark:from-orange-600 dark:to-red-600 px-6 md:px-8 py-12 md:py-16 text-center">
           <!-- Alert Icon Animation -->
@@ -33,8 +33,8 @@
           <!-- Info Sections -->
           <div class="space-y-8">
             <!-- What Happened -->
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-6">
-              <h2 class="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+            <div class="bg-neon-card rounded-2xl p-6">
+              <h2 class="font-semibold text-white mb-3 flex items-center gap-2">
                 <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd" />
                 </svg>

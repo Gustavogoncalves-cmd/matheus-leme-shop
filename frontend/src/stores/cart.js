@@ -39,9 +39,10 @@ export const useCartStore = defineStore('cart', () => {
       items.value.push({
         id: product.id,
         title: product.title,
-        price: product.price,
+        price: product.priceCurrent ?? product.price,
+        priceOriginal: product.priceOriginal ?? product.price,
         discount: product.discount,
-        thumbnail: product.thumbnail,
+        thumbnail: product.thumbnail || product.images?.[0],
         quantity: 1,
       });
     }
@@ -85,7 +86,7 @@ export const useCartStore = defineStore('cart', () => {
    */
   const total = computed(() => {
     return items.value.reduce((sum, item) => {
-      const itemPrice = item.price * (1 - (item.discount || 0) / 100);
+      const itemPrice = (item.price || 0) * (1 - (item.discount || 0) / 100);
       return sum + itemPrice * item.quantity;
     }, 0);
   });

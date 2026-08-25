@@ -98,6 +98,26 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function loginWithGoogle(credential) {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      const res = await authApi.googleLogin(credential);
+      const data = res?.data;
+      if (!data?.token || !data?.user) {
+        throw new Error('Resposta do Google invalida');
+      }
+      persist(data.user, data.token);
+      return data.user;
+    } catch (err) {
+      error.value = err.message;
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   function clearSession() {
     user.value = null;
     token.value = null;
@@ -128,6 +148,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     register,
+    loginWithGoogle,
     initAuth,
     verifySession,
     clearSession,

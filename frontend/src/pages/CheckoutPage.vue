@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 py-8 px-4">
+  <div class="min-h-screen bg-neon-bg py-8 px-4">
     <!-- Header -->
     <div class="max-w-7xl mx-auto mb-8">
       <router-link
         to="/cart"
-        class="inline-flex items-center gap-2 text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition font-medium"
+        class="inline-flex items-center gap-2 text-neon-lime hover:brightness-110 transition font-medium"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />

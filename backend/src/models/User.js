@@ -37,6 +37,57 @@ class User {
   }
 
   /**
+   * Find user by Google ID
+   */
+  static async findByGoogleId(googleId) {
+    try {
+      const result = await pool.query(
+        'SELECT id, email, name, role, google_id, created_at FROM users WHERE google_id = $1',
+        [googleId]
+      );
+      if (result.rows.length === 0) return null;
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error finding user by Google ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new user from Google OAuth data
+   */
+  static async createFromGoogle(googleData) {
+    const { googleId, email, name } = googleData;
+
+    const query = `
+      INSERT INTO users (email, name, role, google_id)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, email, name, role, google_id, created_at
+    `;
+
+    try {
+      const result = await pool.query(query, [
+        email.toLowerCase(),
+        name,
+        'customer',
+        googleId,
+      ]);
+      return result.rows[0];
+    } catch (error) {
+      if (error.code === '23505') {
+        // Unique constraint violation — user exists, link google_id
+        const updated = await pool.query(
+          'UPDATE users SET google_id = $1 WHERE email = $2 RETURNING id, email, name, role, google_id, created_at',
+          [googleId, email.toLowerCase()]
+        );
+        return updated.rows[0];
+      }
+      console.error('Error creating user from Google:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Create a new user with hashed password
    */
   static async create(userData) {

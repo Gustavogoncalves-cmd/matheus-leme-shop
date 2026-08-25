@@ -1,6 +1,6 @@
 <template>
   <div class="w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-lg shadow-lg p-6 md:p-8">
+    <div class="lg:col-span-2 bg-white dark:bg-neon-card rounded-2xl border dark:border-neon-line shadow-lg p-6 md:p-8">
       <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Finalizar compra</h2>
       <p class="mt-3 text-slate-600 dark:text-slate-300">
         Você será direcionado ao Mercado Pago. Após a confirmação, o download ficará disponível em Meus Pedidos.
@@ -8,15 +8,15 @@
       <button
         type="button"
         :disabled="isLoading || cartItems.length === 0"
-        class="mt-8 w-full py-3 px-4 rounded-lg text-white font-bold text-lg transition-colors"
-        :class="isLoading || cartItems.length === 0 ? 'bg-slate-400 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'"
+        class="mt-8 w-full py-3 px-4 rounded-xl text-black font-bold text-lg transition-all"
+        :class="isLoading || cartItems.length === 0 ? 'bg-slate-600 cursor-not-allowed text-white' : 'bg-neon-lime hover:brightness-110'"
         @click="handleSubmit"
       >
         {{ isLoading ? 'Processando...' : 'Pagar com Mercado Pago' }}
       </button>
     </div>
 
-    <aside class="bg-white dark:bg-slate-900 rounded-lg shadow-lg p-6">
+    <aside class="bg-white dark:bg-neon-card rounded-2xl border dark:border-neon-line shadow-lg p-6">
       <h3 class="text-xl font-bold mb-6 text-slate-900 dark:text-white">Resumo do pedido</h3>
       <div class="space-y-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div v-for="item in cartItems" :key="item.id" class="flex justify-between gap-4">
@@ -48,7 +48,7 @@ const isLoading = ref(false);
 const cartItems = computed(() => cartStore.items);
 const cartTotal = computed(() => cartStore.total);
 
-const unitPrice = item => Number(item.price) * (1 - Number(item.discount || 0) / 100);
+const unitPrice = item => Number(item.price || 0) * (1 - Number(item.discount || 0) / 100);
 const formatPrice = value => new Intl.NumberFormat('pt-BR', {
   style: 'currency',
   currency: 'BRL',
