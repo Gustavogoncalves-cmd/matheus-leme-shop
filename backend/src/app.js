@@ -102,6 +102,7 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/content', require('./routes/content'));
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/stripe-payments', require('./routes/stripe-payments'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
