@@ -4,17 +4,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy backend package files
-COPY backend/package*.json ./
-
-# Install production dependencies
-RUN npm ci --omit=dev && npm cache clean --force
-
-# Copy backend source code
+# Copy all backend source code first (package-lock.json is gitignored, so use npm install)
 COPY backend/ .
 
-# Copy shared data files (referenced by seeds via relative path)
+# Copy shared data files (referenced by seeds via relative path ../../shared/)
 COPY shared/ ../shared/
+
+# Install production dependencies (npm ci requires a lockfile, which is gitignored)
+RUN npm install --omit=dev && npm cache clean --force
 
 # Expose API port
 EXPOSE 3000
