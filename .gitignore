@@ -62,6 +62,9 @@ frontend/playwright-report/
 agentdb.rvf
 agentdb.rvf.lock
 
+# Local agent bridge history and runtime data
+/tools/agent-bridge/data/
+
 # Agent tooling telemetry. Runtime receipts, not source: they churn on every
 # run and land in whatever directory a command happened to run from. The few
 # already tracked at the repo/workspace roots are left alone.
